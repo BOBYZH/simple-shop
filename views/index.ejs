@@ -1,11 +1,16 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
-</html>
+<% layout('layout/main.ejs') -%>
+
+<nav class="float-end">
+  <div class="container-fluid border">
+    <h1 class="navbar-brand d-inline-flex">Welcome back, <%= userName %>!</h1>
+    <div class="buttons d-inline">
+      <a class="navbar-brand text-secondary btn" href="/">Home</a>
+      <!-- 使用post形式提交避免游標碰到即登出 -->
+      <form method="post" action="logout" class="d-inline">
+        <button type="submit" class="btn btn-danger">
+          Logout
+        </button>
+      </form>
+    </div>
+  </div>
+</nav>
