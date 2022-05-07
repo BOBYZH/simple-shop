@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "semistandard --fix || nodemon ./bin/www",
+    "seed": "node seeders/_DB && node seeders/_tables && node seeders/members && node seeders/products"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
