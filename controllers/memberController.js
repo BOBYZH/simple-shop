@@ -14,7 +14,7 @@ const memberController = {
 
   signUp: async (req, res) => {
     if (req.body.password !== req.body.password2) {
-      req.flash('errorMessages', '密碼輸入不相同');
+      await req.flash('errorMessages', '密碼輸入不相同');
       return res.redirect('back');
     }
 
@@ -29,7 +29,7 @@ const memberController = {
       );
 
       if (findEmail[0]) {
-        req.flash('errorMessages', '信箱已註冊帳號');
+        await req.flash('errorMessages', '信箱已註冊帳號');
         return res.redirect('back');
       } else {
         const email = req.body.email;
@@ -41,7 +41,7 @@ const memberController = {
       }
       if (conn) {
         conn.release();
-        await req.flash('successMessages', '成功註冊');
+        await await req.flash('successMessages', '成功註冊');
         res.redirect('/signin');
       }
     } catch (err) {
