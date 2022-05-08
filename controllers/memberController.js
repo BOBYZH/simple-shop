@@ -1,11 +1,14 @@
-const mariaDBConfig = require('../config/mariaDB.js');
+const mariaDBConfig = require('../config/mariaDB.js'); // 直接使用SQL語法操作資料庫
 const SQL = require('sql-template-strings'); // 讓ES6模板字串防止 sql 注入
+const pool = mariaDBConfig();
+let conn;
 
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // 產生不可逆的密碼雜湊用
 
 const memberController = {
   signUpPage: (req, res) => {
-    if (req.session.userName) { // 有會員名稱(登入狀態)時轉到首頁(不須註冊)
+    // 有會員名稱(登入狀態)時轉到首頁(不須註冊)
+    if (req.session.userName) {
       res.redirect('/');
     } else {
       res.render('signUp');
@@ -17,13 +20,8 @@ const memberController = {
       await req.flash('errorMessages', '密碼輸入不相同');
       return res.redirect('back');
     }
-
-    // 直接使用SQL語法操作資料庫
-    const pool = mariaDBConfig();
-    let conn;
     try {
       conn = await pool.getConnection();
-
       const findEmail = await conn.query(
         SQL`SELECT email FROM member WHERE email = ${req.body.email};`
       );
@@ -38,19 +36,22 @@ const memberController = {
         await conn.query(
           SQL`INSERT INTO member (email, password) VALUES (${email}, ${password});`
         );
-      }
-      if (conn) {
-        conn.release();
-        await await req.flash('successMessages', '成功註冊');
+
+        await req.flash('successMessages', '成功註冊');
         res.redirect('/signin');
       }
     } catch (err) {
+      await req.flash('errorMessages', '系統錯誤！');
       throw err;
+      res.redirect('back');
+    } finally {
+      if (conn) conn.release();
     }
   },
 
   signInPage: (req, res) => {
-    if (req.session.userName) { // 有會員名稱(登入狀態)時轉到首頁(不須登入)
+    // 有會員名稱(登入狀態)時轉到首頁(不須登入)
+    if (req.session.userName) {
       res.redirect('/');
     } else {
       res.render('signIn');
@@ -58,37 +59,39 @@ const memberController = {
   },
 
   signIn: async (req, res) => {
-    const pool = mariaDBConfig();
-    let conn;
+    conn = await pool.getConnection();
     try {
-      conn = await pool.getConnection();
-
       const users = await conn.query('SELECT email, password FROM member;');
 
-      const searchResult = users.find(
+      const searchedResult = users.find(
         (user) =>
           user.email === req.body.email &&
           bcrypt.compareSync(req.body.password, user.password)
       );
 
-      if (searchResult === undefined) { // 沒有找到對應的帳號與密碼組合
+      // 沒有找到對應的帳號與密碼組合
+      if (searchedResult === undefined) {
         await req.flash('errorMessages', '帳號或密碼輸入錯誤');
-        return res.redirect('back');
+        res.redirect('back');
       } else {
-        const userName = searchResult.email.split('@')[0];
-        req.session.userName = userName; // 將會員名稱存入session，建立登入狀態
-      }
-      if (conn) {
-        conn.release();
-        res.redirect('/');
+        const userName = searchedResult.email.split('@')[0]; // 產生在標題列顯示的帳號名稱
+        // 將會員資料存入session，建立登入狀態
+        req.session.userName = await userName;
+        req.session.user = await searchedResult;
+        
+        res.redirect('back');
       }
     } catch (err) {
+      await req.flash('errorMessages', '系統錯誤！');
       throw err;
+      res.redirect('back');
+    } finally {
+      if (conn) conn.release();
     }
   },
 
-  logout: (req, res) => {
-    req.session.destroy();
+  logout: async (req, res) => {
+    await req.session.destroy(); // 取消session的登入狀態
     res.redirect('/');
   }
 };
