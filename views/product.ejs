@@ -1,0 +1,127 @@
+<% layout('layout/main.ejs') -%>
+
+  <section class="mx-0 mx-md-5 my-5">
+
+    <div class="row">
+      <div class=" col-12 col-md-7">
+        <div class="border-bottom pb-2">
+          <figure class="figure d-flex justify-content-center">
+            <img class="figure-img img-fluid mt-5 border" src="<%= product.imgUrl %>">
+          </figure>
+        </div>
+
+        <div class="text-center mt-4 pb-4 border-bottom">
+          <h3 class="my-2 font-weight-bold">
+            <%= product.prodName %>
+          </h3>
+          <p id="price" class="mt-4">
+            <span class="font-weight-bold h5 col-12">單價：NT$ <%= product.price %>，</span>
+            <span class="font-weight-bold h5 col-12">
+              庫存還剩：
+              <%= product.quantity %>
+            </span>
+            <input type="number" id="stock" class="d-none" value="<%= product.quantity %>" min="0">
+          </p>
+        </div>
+
+      </div>
+
+      <div class="col-12 col-md-5 mt-5">
+
+        <article class="my-5 ml-md-0">
+
+          <h6 class="font-weight-bold">商品說明：</h6>
+          <p>
+            <%= product.description %>
+          </p>
+
+        </article>
+
+        <form action="/cart" method="POST" class="d-block col-12 px-0 pt-5">
+          <div class="row my-4">
+            <div class="col-3 mt-3 pl-1 text-center text-black-50">
+              購買數量
+            </div>
+            <button class="col-3 btn btn-light border-0 text-muted bg-white" id="minus">
+              <span class="h2">-</span>
+            </button>
+            <input type="number" name="quantity" class="col-3 pl-4 text-center" id="quantity" value="1" min="1">
+            <button class="col-2 btn btn-light border-0 text-info bg-white" id="plus">
+              <span class="h2">+</span>
+            </button>
+          </div>
+          <input type="hidden" name="productId" value="<%= product.id %>">
+          <button type="submit" class="btn btn-info py-3 mt-1 col-12" id="add-to-cart">
+            加到購物車
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <!-- Purchase -->
+  <div class="modal fade p-0" id="purchaseModal" tabindex="-1" role="dialog" aria-labelledby="purchaseModalLabel"
+    aria-hidden="true" onclick="window.location.reload()">
+
+    <div role="document" style="position:fixed; bottom:0; width:100%;" style="z-index: 10;"
+      onclick="event.stopPropagation()">
+      <div class="modal-content rounded-0">
+        <div class="modal-header py-0 d-flex justify-content-end align-items-center">
+          <span class="col-1 my-0 ml-3">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+              onclick="window.location.reload()">
+              <span class="h1 text-dark">×</span>
+            </button>
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const minus = document.querySelector('#minus')
+    const plus = document.querySelector('#plus')
+    const quantity = document.querySelector('#quantity')
+    const stock = document.querySelector('#stock')
+    const addToCart = document.querySelector('#add-to-cart')
+    const input= document.querySelector('#quantity')
+
+    minus.addEventListener('click', (event) => {
+      event.preventDefault()
+      let number = Number(quantity.value) // 寫在callback裡面才能轉表單數字屬性
+
+      if (number > 1) {
+        quantity.value = number - 1 // 修改原本的值
+        number-- // 對應的轉換值也要減掉，否則quantity.value與number大小不一致
+      }
+      // 不用else連結，才能在數量顯示為1時，直接讓減號變成灰色
+      if (number === 1) {
+        minus.classList.remove('text-info')
+        minus.classList.add('text-muted')
+      }
+    })
+
+    plus.addEventListener('click', (event) => {
+      event.preventDefault()
+      const number = Number(quantity.value) // 寫在callback裡面才能轉表單數字屬性
+
+      if (number >= Number(stock.value)) {
+        pius.classList.remove('text-info')
+        pius.classList.add('text-muted')
+      }
+
+      minus.classList.remove('text-muted')
+      minus.classList.add('text-info')
+      quantity.value = number + 1 // 修改原本的值
+    })
+
+    addToCart.addEventListener('click', (event) => {
+      addToCart.textContent = 'ADDING…'
+    })  
+
+    input.setAttribute("max", stock.value)
+  </script>
