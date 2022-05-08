@@ -1,16 +1,30 @@
 <% layout('layout/main.ejs') -%>
 
-<nav class="float-end">
-  <div class="container-fluid border">
-    <h1 class="navbar-brand d-inline-flex">Welcome back, <%= userName %>!</h1>
-    <div class="buttons d-inline">
-      <a class="navbar-brand text-secondary btn" href="/">Home</a>
-      <!-- 使用post形式提交避免游標碰到即登出 -->
-      <form method="post" action="logout" class="d-inline">
-        <button type="submit" class="btn btn-danger">
-          Logout
-        </button>
-      </form>
-    </div>
-  </div>
-</nav>
+<div class="list-group">
+  <table class="table table-striped table-borderless">
+    <tbody>
+      <% products.forEach( product=> { %>
+        <tr>
+          <td class="align-middle pl-5">
+            <img src="<%= product.imgUrl %>" alt="<%= product.prodName %>">
+          </td>
+          <td class="align-middle h3">
+            <%= product.prodName %>
+          </td>
+          <td class="align-middle pr-2 h5">
+            NT$ <%= product.price %>
+          </td>
+          <td class="align-middle pr-2 h6">
+            庫存還剩：
+            <span class="h4 text-danger">
+              <%= product.quantity %>
+            </span>
+          </td>
+          <td class="align-middle">
+            <a href="/products/<%= product.id %>" class="btn btn-danger">規格說明</a>
+          </td>
+        </tr>
+        <% }) %>
+    </tbody>
+  </table>
+</div>
