@@ -1,10 +1,11 @@
 const mariaDBConfig = require('../config/mariaDB.js');
 const SQL = require('sql-template-strings');
 const pool = mariaDBConfig();
+let conn;
 
 const productController = {
   getProducts: async (req, res) => {
-    const conn = await pool.getConnection();
+    conn = await pool.getConnection();
     try {
       const products = await conn.query('SELECT * FROM product;');
       res.render('index', { products });
@@ -18,7 +19,7 @@ const productController = {
   },
 
   getProduct: async (req, res) => {
-    const conn = await pool.getConnection();
+    conn = await pool.getConnection();
     try {
       const showProducts = await conn.query(
         SQL`SELECT * FROM product WHERE id = ${req.params.id};`

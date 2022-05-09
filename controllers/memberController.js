@@ -78,7 +78,7 @@ const memberController = {
         // 將會員資料存入session，建立登入狀態
         req.session.userName = await userName;
         req.session.user = await searchedResult;
-        
+
         res.redirect('back');
       }
     } catch (err) {
@@ -92,7 +92,7 @@ const memberController = {
 
   logout: async (req, res) => {
     await req.session.destroy(); // 取消session的登入狀態
-    res.redirect('/');
+    res.redirect('back');
   }
 };
 
