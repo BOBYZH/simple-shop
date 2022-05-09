@@ -10,6 +10,8 @@ const session = require('express-session'); // 手作會員系統需要的sessio
 
 const flash = require('connect-flash'); // 顯示提示訊息
 
+const methodOverride = require('method-override'); // 由於HTML Form限制POST方法，加上套件以使用PUT或DELETE方法
+
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
@@ -38,6 +40,9 @@ app.use(
     saveUninitialized: false
   })
 );
+
+// 使用完整RESTful 動詞
+app.use(methodOverride('_method'));
 
 // 顯示flash提示訊息的相關設定與全域變數
 app.use(flash());
