@@ -1,0 +1,246 @@
+<% layout('layout/main.ejs') -%>
+
+  <div class="container my-5 pb-5" id="cart">
+    <h3 class="mt-3 font-weight-bolder">我的購物車</h3>
+
+    <% if (cart.items.length===0) { %>
+      <div class="">
+        <h5 class="text-center">您還沒有加入商品到購物車中</h5>
+        <h6 class="text-center my-5"></span>
+          <a href="/" class="btn btn-info px-5 py-3" aria-label="Close">
+            開始逛逛
+          </a>
+        </h6>
+      </div>
+      <% } else { %>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col" class="font-weight-normal py-3 pl-5">商品</th>
+              <th scope="col" class="font-weight-normal py-3 pl-5">價格</th>
+              <th scope="col" class="font-weight-normal py-3 pl-5">數量</th>
+              <th scope="col" class="font-weight-normal py-3 pl-5">小計</th>
+              <th scope="col" class="font-weight-normal py-3 pl-5"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% cart.items.forEach( item=> { %>
+              <tr>
+                <td class="pl-5">
+                  <div class="d-flex align-items-center">
+                    <a href="/products/<%= item.prodId %>">
+                      <img src="<%= item.imgUrl %>" class="card-img my-3" alt="<%= item.prodName %>"
+                        style="height: 100px;width: auto;">
+                    </a>
+                    <div class="d-inline ml-2">
+                      <a href="/products/<%= item.prodId %>">
+                        <h4 class="text-dark font-weight-bolder">
+                          <%= item.prodName %>
+                        </h4>
+                      </a>
+                    </div>
+                  </div>
+                </td>
+                <td class="">
+                  <div class="my-5 pt-3">
+                    <div class="d-inline ml-2">
+                      <span class="font-weight-bolder">NTD <%= item.price %></span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="my-5 d-flex align-items-center">
+                    <span class="px-4">
+                      <%= item.quantity %>
+                    </span>
+                    <% if (item.quantity===1) { %>
+                      <form action="/cartItem/<%= item.id %>?_method=DELETE" method="POST">
+                        <% } else { %>
+                          <form action="/cartItem/<%= item.id %>/sub" method="POST">
+                            <% } %>
+                              <button type="submit" class="btn btn-sm btn-outline-secondary border px-4 py-2"
+                                style="border-radius: 50% 0 0 50%;">
+                                <span class="p-0" style="font-size: x-large; border-color: grey;">-</span>
+                              </button>
+                          </form>
+                          <form action="/cartItem/<%= item.id %>/add" method="POST">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary border px-4 py-2"
+                              style="border-radius: 0 50% 50% 0;">
+                              <span class="p-0" style="font-size: x-large; border-color: grey;">+</span>
+                            </button>
+                          </form>
+                  </div>
+                </td>
+                <td>
+                  <div class="my-5 pt-3">
+                    <input type="number" id="price-<%= item.id %>" value="<%= item.price %>" class="d-none">
+                    <input type="number" id="quantity-<%= item.id %>" value="<%= item.quantity %>" class="d-none">
+                    <span class="font-weight-bolder">NTD
+                      <span id="subtotal-<%= item.id %>">0</span>
+                    </span>
+                    <script>
+                      const price<%= item.id %> = document.querySelector('#price-<%= item.id %>')
+                      const quantity<%= item.id %> = document.querySelector('#quantity-<%= item.id %>')
+                      const subtotal<%= item.id %> = document.querySelector('#subtotal-<%= item.id %>')
+                      subtotal <%= item.id %>.textContent = Number(price <%= item.id %>.value) * Number(quantity <%= item.id %>.value)
+                    </script>
+                  </div>
+                </td>
+                <td>
+                  <form action="/cartItem/<%= item.id %>?_method=DELETE" method="POST" class="my-5 pt-2">
+                    <button type="submit" class="btn btn-link text-secondary">
+                      <i class="fas fa-times-circle h5"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+                <tr>
+                  <td colspan="5">
+                    <div class="col-6 col-sm-9 col-md-12 d-flex justify-content-end">
+                      <div>
+                        <h5 class="font-weight-bolder text-right">NTD <%= totalPrice %>
+                        </h5>
+                        <button class="btn btn-info py-3 px-4 px-xl-5 mt-4" id="checkout">
+                          結帳
+                          <small>>></small>
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+          </tbody>
+        </table>
+        <% } %>
+  </div>
+
+  <div class="row my-md-5 py-md-5" id="information" style="display: none;">
+    <div class="col-12 d-md-none border-left bg-light px-5">
+      <div class="sidebar-sticky mt-3">
+        <% cart.items.forEach( item=> { %>
+          <div class="row no-gutters">
+            <div class="col-2" style="display: flex;align-items: center;">
+              <img src="<%= item.imgUrl %>" class="card-img" alt="商品圖片">
+            </div>
+            <div class="col-1">
+              <span class="fa-stack">
+                <span class="fas fa-circle text-secondary fa-stack-2x"></span>
+                <span class="fa-stack-1x text-white">
+                  <%= item.quantity %>
+                </span>
+              </span>
+            </div>
+            <div class="col-5">
+              <div class="card-body pt-3">
+                <h6 class="card-title font-weight-lighter">
+                  <%= item.prodName %>
+                </h6>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="card-body pt-3">
+                <h6 class="font-weight-lighter text-right">
+                  <%= item.price %> NT$
+                </h6>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+            <hr>
+            <div class="d-flex justify-content-between px-4 py-3">
+              <span>總計</span>
+              <h4 class=" font-weight-bold"><small class="text-muted">TWD</small> $<%= totalPrice %> NTD</h4>
+            </div>
+      </div>
+    </div>
+    <div class="col-md-7 px-5">
+      <form action="order" method="POST">
+        <div class="form-group">
+          <% if (userName) { %>
+            <h5 class="my-4">會員結帳：收件人資料</h5>
+            <% } else { %>
+              <div class="ml-2">
+                <h5 class="my-4">目前不開放非會員結帳！</h5>
+                <p class="text-muted">
+                  <a class="text-success" href="/signin">登入會員</a>
+                  快速結帳 或
+                  <a class="text-success" href="/signup">立即註冊</a>
+                  享有完整會員功能
+                <p class="text-warning h5">請於登入後回到購物車繼續交易！</p>
+                </p>
+              </div>
+              <% } %>
+        </div>
+
+        <% if (userName) { %>
+          <div class="form-group">
+            <label for="name" class="text-muted ml-3">姓名</label>
+            <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="name" name="name"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="phone" class="text-muted ml-3">電話號碼</label>
+            <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="phone" name="phone"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="address" class="text-muted ml-3">街道地址</label>
+            <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="address"
+              name="address" required>
+          </div>
+
+          <input type="hidden" name="cartId" value="<% cart.id %>">
+          <input type="hidden" name="amount" value="<% totalPrice %>">
+          <input type="hidden" name="status" value="0">
+          <button type="submit" class="btn btn-info col-12 py-3 mb-5">下一步</button>
+          <% } %>
+      </form>
+    </div>
+    <div class="d-none d-md-block col-md-5 border-left bg-light px-5">
+      <div class="sidebar-sticky mt-3">
+        <% cart.items.forEach( item=> { %>
+          <div class="row no-gutters">
+            <div class="col-md-2" style="display: flex;align-items: center;">
+              <img src="<%= item.imgUrl %>" class="card-img" alt="商品圖片">
+            </div>
+            <div class="col-md-1">
+              <span class="fa-stack">
+                <span class="fas fa-circle text-secondary fa-stack-2x"></span>
+                <span class="fa-stack-1x text-white">
+                  <%= item.quantity %>
+                </span>
+              </span>
+            </div>
+            <div class="col-md-5">
+              <div class="card-body pt-3">
+                <h6 class="card-title font-weight-lighter">
+                  <%= item.prodName %>
+                </h6>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card-body pt-3">
+                <p class="font-weight-lighter text-right">$<%= item.price %> NTD</p>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+            <hr>
+            <div class="d-flex justify-content-between px-4 py-3">
+              <span>總計</span>
+              <p class=" font-weight-bold h4"><small class="text-muted">TWD</small> $<%= totalPrice %> NTD</p>
+            </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cart = document.querySelector('#cart')
+    const information = document.querySelector('#information')
+    const checkout = document.querySelector('#checkout')
+    checkout.addEventListener('click', () => {
+      cart.style.display = "none"
+      information.style.display = "flex"
+    })
+  </script>
+  
