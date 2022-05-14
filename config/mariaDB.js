@@ -8,7 +8,7 @@ function mariaDBSettings () {
     user: process.env.DB_USER,
     password: process.env.DB_PWD,
 
-    acquireTimeout: 100000,
+    acquireTimeout: 100000
   });
 
   return pool;
