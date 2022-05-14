@@ -21,7 +21,7 @@ const cartController = {
       );
 
       cart.items = items; // 將購物車項目插入購物車，以便後續在EJS渲染時讀取
-      cart = cart || { items: [] }; // 找不到購物車的話，回傳空的內容(代表沒加入購物車項目時，購物車是空的)
+      cart = cart || { items: [] }; // 找不到購物車的話，回傳空的內容(代表沒加入商品項目時，購物車是空的)
 
       // console.log('cart with items', cart)
 
@@ -95,7 +95,13 @@ const cartController = {
             cartItem.quantity + Number(req.body.quantity)
           } WHERE cartId = ${cart.id} and ProductId = ${req.body.productId};`
         );
-        await req.flash('successMessages', '已成功將商品加入購物車 ！');
+        const link = '/cart/';
+        await req.flash(
+          'successMessages',
+          '已成功將商品加入<strong><a class="text-info" href="' +
+            link +
+            '">購物車</a></strong> ！'
+        );
 
         /* 將cartId存到session，以便切換頁面後仍使用相同購物車 */
         req.session.cartId = cart.id;
@@ -110,8 +116,104 @@ const cartController = {
     } finally {
       if (conn) conn.release();
     }
-  }
+  },
 
+  addCartItem: async (req, res) => {
+    // 購物車項目+1
+    try {
+      conn = await pool.getConnection();
+
+      let cartItem = await conn.query(
+        // JOIN查詢購物車項目與商品資料
+        SQL`SELECT cart_sub.*, product.id as prodId, product.imgUrl, product.prodName, product.price, 
+        product.quantity as prodStock FROM product 
+        JOIN cart_sub ON product.id = cart_sub.ProductId
+        WHERE cart_sub.id = ${req.params.id};`
+      );
+      cartItem = cartItem[0]; // 單項，去陣列
+
+      if (Number(cartItem.CartId) !== Number(req.session.cartId)) {
+        // 防止對其他人的購物車非法操作
+        await req.flash('error_messages', '只能操作自己的購物車！');
+        return res.redirect('/cart');
+      } else if (cartItem.quantity >= cartItem.prodStock) {
+        await req.flash('error_messages', '購買數量不得超過庫存量！');
+        return res.redirect('back');
+      } else {
+        await conn.query(
+          SQL`UPDATE cart_sub SET quantity = ${cartItem.quantity + 1} WHERE id = ${
+            req.params.id
+          };`
+        );
+        return res.redirect('back');
+      }
+    } catch (err) {
+      await req.flash('error_messages', '系統錯誤！');
+      res.redirect('back');
+      throw err;
+    } finally {
+      if (conn) conn.release();
+    }
+  },
+
+  subCartItem: async (req, res) => {
+    // 購物車項目-1，格式同上
+    try {
+      conn = await pool.getConnection();
+
+      let cartItem = await conn.query(
+        SQL`SELECT * FROM cart_sub WHERE id = ${req.params.id};`
+      );
+      cartItem = cartItem[0];
+
+      if (Number(cartItem.CartId) !== Number(req.session.cartId)) {
+        // 防止對其他人的購物車非法操作
+        await req.flash('error_messages', '只能操作自己的購物車！');
+        return res.redirect('/cart');
+      } else {
+        await conn.query(
+          // 當選購項目剩下1個時，"-1"改成刪除該項目(否則變成選購0項)
+          SQL`UPDATE cart_sub SET quantity = ${
+            cartItem.quantity - 1 >= 1 ? cartItem.quantity - 1 : 1
+          } WHERE id = ${req.params.id};`
+        );
+        return res.redirect('back');
+      }
+    } catch (err) {
+      await req.flash('error_messages', '系統錯誤！');
+      res.redirect('back');
+      throw err;
+    } finally {
+      if (conn) conn.release();
+    }
+  },
+
+  deleteCartItem: async (req, res) => {
+    try {
+      conn = await pool.getConnection();
+
+      let cartItem = await conn.query(
+        // 先取得要刪的項目資料做判斷
+        SQL`SELECT * FROM cart_sub WHERE id = ${req.params.id};`
+      );
+      cartItem = cartItem[0];
+
+      if (Number(cartItem.CartId) !== Number(req.session.cartId)) {
+        // 防止對其他人的購物車非法操作
+        await req.flash('error_messages', '只能操作自己的購物車！');
+        return res.redirect('/cart');
+      } else {
+        await conn.query(SQL`DELETE FROM cart_sub WHERE id = ${req.params.id};`);
+        return res.redirect('back');
+      }
+    } catch (err) {
+      await req.flash('error_messages', '刪除項目時出現錯誤，請稍後再試......');
+      res.redirect('back');
+      throw err;
+    } finally {
+      if (conn) conn.release();
+    }
+  }
 };
 
 module.exports = cartController;
