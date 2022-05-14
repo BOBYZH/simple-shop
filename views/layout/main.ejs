@@ -16,7 +16,7 @@
 
 <body>
 
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm container">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center p-3 px-md-4 mb-3">
 
     <h5 class="my-0 mr-md-auto font-weight-normal">
       <a class="h3" href="/"><%= webTitle %></a>
@@ -24,7 +24,7 @@
 
     <nav class="my-2 my-md-0 mr-md-3">
       
-      <span class="p-2 text-dark">歡迎光臨，
+      <span class="p-2 text-dark d-none d-sm-inline">歡迎光臨，
         <%= userName || "新顧客" %>！
       </span>
       <a class="p-2 text-dark" href="/cart">購物車</a>
@@ -37,7 +37,7 @@
 
           <a class="p-2 text-dark" href="/orders">訂單查詢</a>
           <!-- 使用post形式提交避免游標碰到即登出 -->
-          <form method="post" action="logout" class="d-inline">
+          <form method="post" action="logout" class="d-inline-block">
             <button type="submit" class="p-2 text-dark">
               登出
             </button>
@@ -52,13 +52,13 @@
   <main class="container-fluid">
     <% if (successMessages.length !==0) { %>
       <div class="alert alert-success my-5 py-3 text-center" role="alert">
-        <%= successMessages %>
+        <%- successMessages %>
       </div>
       <% } %>
   
         <% if (errorMessages.length !==0) { %>
           <div class="alert alert-danger my-5 py-3 text-center" role="alert">
-            <%= errorMessages %>
+            <%- errorMessages %>
           </div>
           <% } %>
   
