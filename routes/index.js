@@ -16,6 +16,12 @@ router.get('/products/:id', productController.getProduct);
 router.get('/cart', cartController.getCart);
 // 新增商品
 router.post('/cart', cartController.postCart);
+// 增加數量
+router.patch('/cartItem/:id/add', cartController.addCartItem);
+// 減少數量
+router.patch('/cartItem/:id/sub', cartController.subCartItem);
+// 移除商品
+router.delete('/cartItem/:id', cartController.deleteCartItem);
 
 // 帳戶
 // 註冊頁面
