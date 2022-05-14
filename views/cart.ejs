@@ -44,7 +44,7 @@
                 <td class="">
                   <div class="my-5 pt-3">
                     <div class="d-inline ml-2">
-                      <span class="font-weight-bolder">NTD <%= item.price %></span>
+                      <span class="font-weight-bolder">NT$ <%= item.price %></span>
                     </div>
                   </div>
                 </td>
@@ -56,14 +56,14 @@
                     <% if (item.quantity===1) { %>
                       <form action="/cartItem/<%= item.id %>?_method=DELETE" method="POST">
                         <% } else { %>
-                          <form action="/cartItem/<%= item.id %>/sub" method="POST">
+                          <form action="/cartItem/<%= item.id %>/sub?_method=PATCH" method="POST">
                             <% } %>
                               <button type="submit" class="btn btn-sm btn-outline-secondary border px-4 py-2"
                                 style="border-radius: 50% 0 0 50%;">
                                 <span class="p-0" style="font-size: x-large; border-color: grey;">-</span>
                               </button>
                           </form>
-                          <form action="/cartItem/<%= item.id %>/add" method="POST">
+                          <form action="/cartItem/<%= item.id %>/add?_method=PATCH" method="POST">
                             <button type="submit" class="btn btn-sm btn-outline-secondary border px-4 py-2"
                               style="border-radius: 0 50% 50% 0;">
                               <span class="p-0" style="font-size: x-large; border-color: grey;">+</span>
@@ -75,21 +75,24 @@
                   <div class="my-5 pt-3">
                     <input type="number" id="price-<%= item.id %>" value="<%= item.price %>" class="d-none">
                     <input type="number" id="quantity-<%= item.id %>" value="<%= item.quantity %>" class="d-none">
-                    <span class="font-weight-bolder">NTD
-                      <span id="subtotal-<%= item.id %>">0</span>
+                    <span class="font-weight-bolder">NT$
+                      <span id="subtotal-<%= item.id %>">?</span>
                     </span>
                     <script>
                       const price<%= item.id %> = document.querySelector('#price-<%= item.id %>')
                       const quantity<%= item.id %> = document.querySelector('#quantity-<%= item.id %>')
                       const subtotal<%= item.id %> = document.querySelector('#subtotal-<%= item.id %>')
-                      subtotal <%= item.id %>.textContent = Number(price <%= item.id %>.value) * Number(quantity <%= item.id %>.value)
+
+                      console.log('test', price<%= item.id %>, quantity<%= item.id %>, subtotal<%= item.id %>)
+
+                      subtotal<%= item.id %>.textContent = Number(price<%= item.id %>.value) * Number(quantity<%= item.id %>.value)
                     </script>
                   </div>
                 </td>
                 <td>
                   <form action="/cartItem/<%= item.id %>?_method=DELETE" method="POST" class="my-5 pt-2">
-                    <button type="submit" class="btn btn-link text-secondary">
-                      <i class="fas fa-times-circle h5"></i>
+                    <button type="submit" class="btn btn-danger text-secondary" style="border-radius: 50%;">
+                      <span class="h5">X</span>
                     </button>
                   </form>
                 </td>
@@ -99,7 +102,7 @@
                   <td colspan="5">
                     <div class="col-6 col-sm-9 col-md-12 d-flex justify-content-end">
                       <div>
-                        <h5 class="font-weight-bolder text-right">NTD <%= totalPrice %>
+                        <h5 class="font-weight-bolder text-right">總金額： NT$ <%= totalPrice %>
                         </h5>
                         <button class="btn btn-info py-3 px-4 px-xl-5 mt-4" id="checkout">
                           結帳
@@ -115,45 +118,7 @@
   </div>
 
   <div class="row my-md-5 py-md-5" id="information" style="display: none;">
-    <div class="col-12 d-md-none border-left bg-light px-5">
-      <div class="sidebar-sticky mt-3">
-        <% cart.items.forEach( item=> { %>
-          <div class="row no-gutters">
-            <div class="col-2" style="display: flex;align-items: center;">
-              <img src="<%= item.imgUrl %>" class="card-img" alt="商品圖片">
-            </div>
-            <div class="col-1">
-              <span class="fa-stack">
-                <span class="fas fa-circle text-secondary fa-stack-2x"></span>
-                <span class="fa-stack-1x text-white">
-                  <%= item.quantity %>
-                </span>
-              </span>
-            </div>
-            <div class="col-5">
-              <div class="card-body pt-3">
-                <h6 class="card-title font-weight-lighter">
-                  <%= item.prodName %>
-                </h6>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="card-body pt-3">
-                <h6 class="font-weight-lighter text-right">
-                  <%= item.price %> NT$
-                </h6>
-              </div>
-            </div>
-          </div>
-          <% }) %>
-            <hr>
-            <div class="d-flex justify-content-between px-4 py-3">
-              <span>總計</span>
-              <h4 class=" font-weight-bold"><small class="text-muted">TWD</small> $<%= totalPrice %> NTD</h4>
-            </div>
-      </div>
-    </div>
-    <div class="col-md-7 px-5">
+    <div class="col-12 col-md-7 px-5 mb-4">
       <form action="order" method="POST">
         <div class="form-group">
           <% if (userName) { %>
@@ -173,17 +138,17 @@
         </div>
 
         <% if (userName) { %>
-          <div class="form-group">
+          <div class="form-group my-3">
             <label for="name" class="text-muted ml-3">姓名</label>
             <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="name" name="name"
               required>
           </div>
-          <div class="form-group">
+          <div class="form-group my-3">
             <label for="phone" class="text-muted ml-3">電話號碼</label>
             <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="phone" name="phone"
               required>
           </div>
-          <div class="form-group">
+          <div class="form-group my-3">
             <label for="address" class="text-muted ml-3">街道地址</label>
             <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="address"
               name="address" required>
@@ -192,35 +157,37 @@
           <input type="hidden" name="cartId" value="<% cart.id %>">
           <input type="hidden" name="amount" value="<% totalPrice %>">
           <input type="hidden" name="status" value="0">
-          <button type="submit" class="btn btn-info col-12 py-3 mb-5">下一步</button>
+
+          <div class="form-group mt-5">
+            <button type="submit" class="btn btn-info col-12 py-3">下一步</button>
+          </div>
           <% } %>
       </form>
     </div>
-    <div class="d-none d-md-block col-md-5 border-left bg-light px-5">
+    <div class="col-12 col-md-5 border-left bg-light px-5">
       <div class="sidebar-sticky mt-3">
         <% cart.items.forEach( item=> { %>
           <div class="row no-gutters">
-            <div class="col-md-2" style="display: flex;align-items: center;">
-              <img src="<%= item.imgUrl %>" class="card-img" alt="商品圖片">
+            <div class="col-3 col-md-2" style="display: flex;align-items: center;">
+              <img src="<%= item.imgUrl %>" class="img-fluid" alt="商品圖片">
             </div>
-            <div class="col-md-1">
-              <span class="fa-stack">
-                <span class="fas fa-circle text-secondary fa-stack-2x"></span>
-                <span class="fa-stack-1x text-white">
-                  <%= item.quantity %>
-                </span>
-              </span>
-            </div>
-            <div class="col-md-5">
+            <div class="col-2 col-md-2">
               <div class="card-body pt-3">
                 <h6 class="card-title font-weight-lighter">
                   <%= item.prodName %>
                 </h6>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-3 col-md-4">
               <div class="card-body pt-3">
-                <p class="font-weight-lighter text-right">$<%= item.price %> NTD</p>
+                <p class="font-weight-lighter text-right">$<%= item.price %></p>
+              </div>
+            </div>
+            <div class="col-4 col-md-4">
+              <div class="card-body pt-3">
+                <span class="card-title font-weight-lighter">
+                  X <%= item.quantity %>
+                </span>
               </div>
             </div>
           </div>
@@ -228,7 +195,7 @@
             <hr>
             <div class="d-flex justify-content-between px-4 py-3">
               <span>總計</span>
-              <p class=" font-weight-bold h4"><small class="text-muted">TWD</small> $<%= totalPrice %> NTD</p>
+              <p class=" font-weight-bold h4"><small class="text-muted">NT$</small> <%= totalPrice %></p>
             </div>
       </div>
     </div>
@@ -243,4 +210,3 @@
       information.style.display = "flex"
     })
   </script>
-  
