@@ -45,7 +45,7 @@
             <button class="col-3 btn btn-light border-0 text-muted bg-white" id="minus">
               <span class="h2">-</span>
             </button>
-            <input type="number" name="quantity" class="col-3 pl-4 text-center" id="quantity" value="1" min="1">
+            <input type="number" name="quantity" class="col-3 pl-4 text-center" id="quantity" value="1" min="1"  step="1" readonly>
             <button class="col-2 btn btn-light border-0 text-info bg-white" id="plus">
               <span class="h2">+</span>
             </button>
@@ -59,28 +59,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Modal -->
-  <!-- Purchase -->
-  <div class="modal fade p-0" id="purchaseModal" tabindex="-1" role="dialog" aria-labelledby="purchaseModalLabel"
-    aria-hidden="true" onclick="window.location.reload()">
-
-    <div role="document" style="position:fixed; bottom:0; width:100%;" style="z-index: 10;"
-      onclick="event.stopPropagation()">
-      <div class="modal-content rounded-0">
-        <div class="modal-header py-0 d-flex justify-content-end align-items-center">
-          <span class="col-1 my-0 ml-3">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-              onclick="window.location.reload()">
-              <span class="h1 text-dark">×</span>
-            </button>
-          </span>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
 
   <script>
     const minus = document.querySelector('#minus')
@@ -120,7 +98,9 @@
     })
 
     addToCart.addEventListener('click', (event) => {
-      addToCart.textContent = 'ADDING…'
+      addToCart.classList.remove('btn-info')
+      addToCart.classList.add('btn-warning')
+      addToCart.textContent = '加入中…'
     })  
 
     input.setAttribute("max", stock.value)
