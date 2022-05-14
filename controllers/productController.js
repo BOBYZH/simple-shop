@@ -10,7 +10,7 @@ const productController = {
       const products = await conn.query('SELECT * FROM product;');
       res.render('index', { products });
     } catch (err) {
-      await req.flash('error_messages', '系統錯誤！');
+      await req.flash('errorMessages', '系統錯誤！');
       res.redirect('back');
       throw err;
     } finally {
@@ -28,13 +28,13 @@ const productController = {
 
       // 避免無庫存仍可進入下單
       if (product.quantity === 0) {
-        await req.flash('error_messages', '產品已經售完！');
+        await req.flash('errorMessages', '產品已經售完！');
         return res.redirect('back');
       } else {
         res.render('product', { product });
       }
     } catch (err) {
-      await req.flash('error_messages', '系統錯誤！');
+      await req.flash('errorMessages', '系統錯誤！');
       res.redirect('back');
       throw err;
     } finally {
