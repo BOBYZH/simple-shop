@@ -42,8 +42,8 @@ const memberController = {
       }
     } catch (err) {
       await req.flash('errorMessages', '系統錯誤！');
-      throw err;
       res.redirect('back');
+      throw err;
     } finally {
       if (conn) conn.release();
     }
@@ -83,8 +83,8 @@ const memberController = {
       }
     } catch (err) {
       await req.flash('errorMessages', '系統錯誤！');
-      throw err;
       res.redirect('back');
+      throw err;
     } finally {
       if (conn) conn.release();
     }
