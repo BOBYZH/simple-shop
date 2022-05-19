@@ -76,17 +76,10 @@
                     <input type="number" id="price-<%= item.id %>" value="<%= item.price %>" class="d-none">
                     <input type="number" id="quantity-<%= item.id %>" value="<%= item.quantity %>" class="d-none">
                     <span class="font-weight-bolder">NT$
-                      <span id="subtotal-<%= item.id %>">?</span>
+                      <span id="subtotal-<%= item.id %>">
+                        <%= item.price*item.quantity %>
+                      </span>
                     </span>
-                    <script>
-                      const price<%= item.id %> = document.querySelector('#price-<%= item.id %>')
-                      const quantity<%= item.id %> = document.querySelector('#quantity-<%= item.id %>')
-                      const subtotal<%= item.id %> = document.querySelector('#subtotal-<%= item.id %>')
-
-                      console.log('test', price<%= item.id %>, quantity<%= item.id %>, subtotal<%= item.id %>)
-
-                      subtotal<%= item.id %>.textContent = Number(price<%= item.id %>.value) * Number(quantity<%= item.id %>.value)
-                    </script>
                   </div>
                 </td>
                 <td>
