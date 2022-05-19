@@ -1,0 +1,61 @@
+<% layout('layout/main.ejs') -%>
+
+  <h1 class="text-center">付款資訊</h1>
+  <hr />
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          訂單資訊
+        </div>
+        <div class="card-body">
+          <div>
+            <h4>付款連結</h4>
+            <p>
+              <a href="<%= tradeInfo.tradeLink %>">Line Pay</a>
+            </p>
+          </div>
+          <div>
+            <h4>消費金額</h4>
+            <p>
+              NT$ <%= tradeInfo.orderAmount %>
+            </p>
+          </div>
+          <div class="text-danger">
+            <h4>有效期限</h4>
+            <p>
+              <%= tradeInfo.expiryDate %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          商店資訊
+        </div>
+        <div class="card-body">
+          <div>
+            <h4>商店名稱</h4>
+            <p>
+              <%= tradeInfo.shopName %>
+            </p>
+          </div>
+          <div>
+            <h4>商品名稱</h4>
+            <p>
+              <%= tradeInfo.productCategoryName %>
+            </p>
+          </div>
+          <div>
+            <h4>商店編號</h4>
+            <p>
+              <%= tradeInfo.sn %>
+            </p>
+          </div>
+        </div>
+      </div><a href="/" class="btn btn-primary mt-3 py-3 w-100">返回首頁</a>
+    </div>
+  </div>
+  
