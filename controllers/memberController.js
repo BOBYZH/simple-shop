@@ -61,7 +61,7 @@ const memberController = {
   signIn: async (req, res) => {
     conn = await pool.getConnection();
     try {
-      const users = await conn.query('SELECT email, password FROM member;');
+      const users = await conn.query('SELECT id, email, password FROM member;');
 
       const searchedResult = users.find(
         (user) =>
@@ -92,7 +92,7 @@ const memberController = {
 
   logout: async (req, res) => {
     await req.session.destroy(); // 取消session的登入狀態
-    res.redirect('back');
+    res.redirect('/');
   }
 };
 
