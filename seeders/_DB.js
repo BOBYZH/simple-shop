@@ -25,6 +25,12 @@ let conn;
 
     await conn.query(
       `
+        DROP database if exists simple_shop;
+        `
+    );
+
+    await conn.query(
+      `
         CREATE database if not exists simple_shop;
         `
     );
