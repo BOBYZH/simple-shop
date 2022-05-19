@@ -18,12 +18,14 @@
                 NT$ <%= product.price %>
               </td>
               <td class="align-middle pr-2 h6">
+                還剩：
                 <span class="h4 text-danger">
                   <%= product.quantity %>
-                </span> in stock!
+                </span>
+                個！
               </td>
               <td class="align-middle">
-                <a href="/products/<%= product.id %>" class="btn btn-danger">Details</a>
+                <a href="/products/<%= product.id %>" class="btn btn-danger">產品介紹</a>
               </td>
             </tr>
             <% }) %>
