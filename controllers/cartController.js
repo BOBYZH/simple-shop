@@ -1,5 +1,5 @@
-const mariaDBConfig = require("../config/mariaDB.js");
-const SQL = require("sql-template-strings");
+const mariaDBConfig = require('../config/mariaDB.js');
+const SQL = require('sql-template-strings');
 const pool = mariaDBConfig();
 let conn;
 
@@ -31,10 +31,10 @@ const cartController = {
           ? cart.items.map((d) => d.price * d.quantity).reduce((a, b) => a + b)
           : 0;
 
-      return res.render("cart", { cart, totalPrice });
+      return res.render('cart', { cart, totalPrice });
     } catch (err) {
-      await req.flash("errorMessages", "系統錯誤！");
-      res.redirect("back");
+      await req.flash('errorMessages', '系統錯誤！');
+      res.redirect('back');
       throw err;
     } finally {
       if (conn) conn.release();
@@ -54,7 +54,7 @@ const cartController = {
 
       if (cart.length === 0) {
         // 使用者沒有購物車時，補產生之
-        const query = await conn.query("INSERT INTO cart_main () VALUES ();");
+        const query = await conn.query('INSERT INTO cart_main () VALUES ();');
         cart = await conn.query(
           // 重新選取補產生的購物車
           SQL`SELECT * FROM cart_main WHERE id = ${query.insertId};`
@@ -87,17 +87,17 @@ const cartController = {
       cartItem = cartItem[0]; // 由於隨購物車新增的項目只有一個，也去陣列以便後續操作
 
       if (cartItem.quantity >= cartItem.prodStock) {
-        await req.flash("errorMessages", "挑選數量不得超過庫存量！");
-        return res.redirect("back");
+        await req.flash('errorMessages', '挑選數量不得超過庫存量！');
+        return res.redirect('back');
       } else {
         await conn.query(
           `UPDATE cart_sub SET quantity = ${
             cartItem.quantity + Number(req.body.quantity)
           } WHERE cartId = ${cart.id} and ProductId = ${req.body.productId};`
         );
-        const link = "/cart/";
+        const link = '/cart/';
         await req.flash(
-          "successMessages",
+          'successMessages',
           '已成功將商品加入<strong><a class="text-info" href="' +
             link +
             '">購物車</a></strong> ！'
@@ -106,12 +106,12 @@ const cartController = {
         /* 將cartId存到session，以便切換頁面後仍使用相同購物車 */
         req.session.cartId = cart.id;
         return req.session.save(() => {
-          return res.redirect("back");
+          return res.redirect('back');
         });
       }
     } catch (err) {
-      await req.flash("errorMessages", "系統錯誤！");
-      res.redirect("back");
+      await req.flash('errorMessages', '系統錯誤！');
+      res.redirect('back');
       throw err;
     } finally {
       if (conn) conn.release();
@@ -134,22 +134,22 @@ const cartController = {
 
       if (Number(cartItem.CartId) !== Number(req.session.cartId)) {
         // 防止對其他人的購物車非法操作
-        await req.flash("errorMessages", "只能操作自己的購物車！");
-        return res.redirect("/cart");
+        await req.flash('errorMessages', '只能操作自己的購物車！');
+        return res.redirect('/cart');
       } else if (cartItem.quantity >= cartItem.prodStock) {
-        await req.flash("errorMessages", "購買數量不得超過庫存量！");
-        return res.redirect("back");
+        await req.flash('errorMessages', '購買數量不得超過庫存量！');
+        return res.redirect('back');
       } else {
         await conn.query(
           SQL`UPDATE cart_sub SET quantity = ${
             cartItem.quantity + 1
           } WHERE id = ${req.params.id};`
         );
-        return res.redirect("back");
+        return res.redirect('back');
       }
     } catch (err) {
-      await req.flash("errorMessages", "系統錯誤！");
-      res.redirect("back");
+      await req.flash('errorMessages', '系統錯誤！');
+      res.redirect('back');
       throw err;
     } finally {
       if (conn) conn.release();
@@ -168,8 +168,8 @@ const cartController = {
 
       if (Number(cartItem.CartId) !== Number(req.session.cartId)) {
         // 防止對其他人的購物車非法操作
-        await req.flash("errorMessages", "只能操作自己的購物車！");
-        return res.redirect("/cart");
+        await req.flash('errorMessages', '只能操作自己的購物車！');
+        return res.redirect('/cart');
       } else {
         await conn.query(
           // 當選購項目剩下1個時，"-1"改成刪除該項目(否則變成選購0項)
@@ -177,11 +177,11 @@ const cartController = {
             cartItem.quantity - 1 >= 1 ? cartItem.quantity - 1 : 1
           } WHERE id = ${req.params.id};`
         );
-        return res.redirect("back");
+        return res.redirect('back');
       }
     } catch (err) {
-      await req.flash("errorMessages", "系統錯誤！");
-      res.redirect("back");
+      await req.flash('errorMessages', '系統錯誤！');
+      res.redirect('back');
       throw err;
     } finally {
       if (conn) conn.release();
@@ -200,22 +200,22 @@ const cartController = {
 
       if (Number(cartItem.CartId) !== Number(req.session.cartId)) {
         // 防止對其他人的購物車非法操作
-        await req.flash("errorMessages", "只能操作自己的購物車！");
-        return res.redirect("/cart");
+        await req.flash('errorMessages', '只能操作自己的購物車！');
+        return res.redirect('/cart');
       } else {
         await conn.query(
           SQL`DELETE FROM cart_sub WHERE id = ${req.params.id};`
         );
-        return res.redirect("back");
+        return res.redirect('back');
       }
     } catch (err) {
-      await req.flash("errorMessages", "刪除項目時出現錯誤，請稍後再試......");
-      res.redirect("back");
+      await req.flash('errorMessages', '刪除項目時出現錯誤，請稍後再試......');
+      res.redirect('back');
       throw err;
     } finally {
       if (conn) conn.release();
     }
-  },
+  }
 };
 
 module.exports = cartController;
