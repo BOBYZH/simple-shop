@@ -69,7 +69,7 @@ let conn;
         CREATE TABLE if not exists order_main(
           id    INT(10)      unsigned NOT NULL AUTO_INCREMENT,
           UserId   INT(10)      unsigned NOT NULL,
-          name  VARCHAR(50)        NOT NULL,
+          name  VARCHAR(100)        NOT NULL,
           phone VARCHAR(50)        NOT NULL,
           address VARCHAR(100)        NOT NULL,
           amount    INT(10)      unsigned NOT NULL,
