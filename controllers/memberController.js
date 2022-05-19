@@ -31,14 +31,14 @@ const memberController = {
         return res.redirect('back');
       } else {
         const email = req.body.email;
-        const password = bcrypt.hashSync(req.body.password, 10);
+        const password = bcrypt.hashSync(req.body.password, 10); // 密碼以雜湊儲存
 
         await conn.query(
           SQL`INSERT INTO member (email, password) VALUES (${email}, ${password});`
         );
 
-        await req.flash('successMessages', '成功註冊');
-        res.redirect('/signin');
+        await req.flash("successMessages", "成功註冊");
+        res.redirect("/signin");
       }
     } catch (err) {
       await req.flash('errorMessages', '系統錯誤！');
@@ -61,8 +61,9 @@ const memberController = {
   signIn: async (req, res) => {
     conn = await pool.getConnection();
     try {
-      const users = await conn.query('SELECT id, email, password FROM member;');
+      const users = await conn.query("SELECT id, email, password FROM member;");
 
+      // 搜尋帳密是否對應，密碼也以雜湊比對
       const searchedResult = users.find(
         (user) =>
           user.email === req.body.email &&
@@ -71,15 +72,15 @@ const memberController = {
 
       // 沒有找到對應的帳號與密碼組合
       if (searchedResult === undefined) {
-        await req.flash('errorMessages', '帳號或密碼輸入錯誤');
-        res.redirect('back');
+        await req.flash("errorMessages", "帳號或密碼輸入錯誤");
+        res.redirect("back");
       } else {
-        const userName = searchedResult.email.split('@')[0]; // 產生在標題列顯示的帳號名稱
+        const userName = searchedResult.email.split("@")[0]; // 產生在標題列顯示的帳號名稱，以便確認登入狀態
         // 將會員資料存入session，建立登入狀態
         req.session.userName = await userName;
         req.session.user = await searchedResult;
 
-        res.redirect('back');
+        res.redirect("back");
       }
     } catch (err) {
       await req.flash('errorMessages', '系統錯誤！');
