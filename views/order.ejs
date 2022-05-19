@@ -58,15 +58,18 @@
                         <td>
                           <p>狀態：
                             <% if (order.status==='0' ) { %>
-                              <span class="text-warning font-weight-bolder fw-bolder text-decoration-underline">未付款</span>
+                              <span
+                                class="text-warning font-weight-bolder fw-bolder text-decoration-underline">未付款</span>
                               <% } %>
 
                                 <% if (order.status==='1' ) { %>
-                                  <span class="text-success font-weight-bolder fw-bolder text-decoration-underline">已付款</span>
+                                  <span
+                                    class="text-success font-weight-bolder fw-bolder text-decoration-underline">已付款</span>
                                   <% } %>
 
                                     <% if (order.status==='-1' ) { %>
-                                      <span class="text-muted font-weight-bolder fw-bolder text-decoration-underline">已取消</span>
+                                      <span
+                                        class="text-muted font-weight-bolder fw-bolder text-decoration-underline">已取消</span>
                                       <% } %>
                           </p>
                         </td>
@@ -120,4 +123,3 @@
         </div>
         <% } %>
   </div>
-  

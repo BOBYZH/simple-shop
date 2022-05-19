@@ -45,7 +45,8 @@
             <button class="col-3 btn btn-light border-0 text-muted bg-white" id="minus">
               <span class="h2">-</span>
             </button>
-            <input type="number" name="quantity" class="col-3 pl-4 text-center" id="quantity" value="1" min="1"  step="1" readonly>
+            <input type="number" name="quantity" class="col-3 pl-4 text-center" id="quantity" value="1" min="1" step="1"
+              readonly>
             <button class="col-2 btn btn-light border-0 text-info bg-white" id="plus">
               <span class="h2">+</span>
             </button>
@@ -66,7 +67,7 @@
     const quantity = document.querySelector('#quantity')
     const stock = document.querySelector('#stock')
     const addToCart = document.querySelector('#add-to-cart')
-    const input= document.querySelector('#quantity')
+    const input = document.querySelector('#quantity')
 
     minus.addEventListener('click', (event) => {
       event.preventDefault()
@@ -101,7 +102,7 @@
       addToCart.classList.remove('btn-info')
       addToCart.classList.add('btn-warning')
       addToCart.textContent = '加入中…'
-    })  
+    })
 
     input.setAttribute("max", stock.value)
   </script>
