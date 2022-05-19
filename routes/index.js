@@ -4,6 +4,7 @@ const router = express.Router();
 const memberController = require('../controllers/memberController');
 const productController = require('../controllers/productController');
 const cartController = require('../controllers/cartController');
+const orderController = require('../controllers/orderController');
 
 // 商品
 // 所有商品頁面(首頁)
@@ -22,6 +23,16 @@ router.patch('/cartItem/:id/add', cartController.addCartItem);
 router.patch('/cartItem/:id/sub', cartController.subCartItem);
 // 移除商品
 router.delete('/cartItem/:id', cartController.deleteCartItem);
+
+// 訂單
+// 訂單頁面
+router.get('/orders', orderController.getOrders);
+// 新增訂單
+router.post('/order', orderController.postOrder);
+// 取消訂單
+router.put('/order/:id/cancel', orderController.cancelOrder);
+// 付款頁面
+router.get('/order/:id/payment', orderController.getPayment);
 
 // 帳戶
 // 註冊頁面
