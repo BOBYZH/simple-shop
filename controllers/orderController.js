@@ -30,22 +30,31 @@ const orderController = {
       try {
         conn = await pool.getConnection();
 
+        /* 示範以AES對訂購者姓名、電話號碼、地址等個資加解密，並將加密金鑰存在環境變數，以及從16進位還原否則產生錯誤 */
         let orders = await conn.query(
-          SQL`SELECT * FROM order_main WHERE UserId = ${req.session.user.id};`
+          SQL`SELECT id, UserId, 
+          AES_DECRYPT(UNHEX(name), ${process.env.AES_KEY}) as name, 
+          AES_DECRYPT(UNHEX(phone), ${process.env.AES_KEY}) as phone,
+          AES_DECRYPT(UNHEX(address), ${process.env.AES_KEY}) as address, 
+          amount, status, sn, createdAt 
+          FROM order_main WHERE UserId = ${req.session.user.id};`
         );
 
         for (let i = 0; i < orders.length; i++) {
+          // 依訂單項目數量選取對應的資料，由於與商品JOIN欄位名稱會重複，將商品資料重新命名
           const orderItems = await conn.query(
-            SQL`SELECT order_sub.*, product.id as prodId, product.imgUrl, product.prodName as originalProdName, product.price as originalPrice, product.quantity as prodStock FROM product 
-              JOIN order_sub ON product.id = order_sub.ProductId
-              WHERE OrderId = ${orders[i].id};`
+            SQL`SELECT order_sub.*, product.id as prodId, product.imgUrl, 
+            product.prodName as originalProdName, product.price as originalPrice, product.quantity as prodStock 
+            FROM product 
+            JOIN order_sub ON product.id = order_sub.ProductId
+            WHERE OrderId = ${orders[i].id};`
           );
           orders[i].items = orderItems;
         }
 
         orders = orders.sort((a, b) => b.createdAt - a.createdAt); // 使最新的訂單在上面
 
-        return res.render('order', { orders, dayjs });
+        return res.render('order', { orders, dayjs }); // 使EJS能使用dayjs顯示日期時間
       } catch (err) {
         await req.flash('errorMessages', '系統錯誤！');
         res.redirect('back');
@@ -67,32 +76,41 @@ const orderController = {
         let cart = await conn.query(
           SQL`SELECT * FROM cart_main WHERE id = ${req.session.cartId};`
         );
-        cart = cart[0];
+        cart = cart[0]; // 單項去陣列
 
+        // 讀取購物車項目資訊，並與商品資訊JOIN(後者並重新命名)
         const items = await conn.query(
           SQL`SELECT cart_sub.*, product.id as prodId, product.imgUrl, product.prodName, product.price, product.quantity as prodStock FROM product 
                 JOIN cart_sub ON product.id = cart_sub.ProductId
                 WHERE CartId = ${req.session.cartId};`
         );
 
-        cart.items = items;
+        cart.items = items; // 將購物車項目插入購物車以便後續操作與EJS渲染
 
+        // 依表單回傳建立訂單，其中姓名、電話與地址以AES加密儲存，避免客戶資料直接洩露
         const query = await conn.query(
           SQL`INSERT INTO order_main (UserId, name, address, phone, status, amount) 
-                VALUES (${req.session.user.id}, ${req.body.name}, ${req.body.address}, ${req.body.phone}, ${req.body.status}, ${req.body.amount});`
+                  VALUES (${req.session.user.id}, 
+                  HEX(AES_ENCRYPT(${req.body.name},  ${process.env.AES_KEY})),
+                  HEX(AES_ENCRYPT(${req.body.address},  ${process.env.AES_KEY})),
+                  HEX(AES_ENCRYPT(${req.body.phone}, ${process.env.AES_KEY})), 
+                  ${req.body.status}, ${req.body.amount});`
         );
 
+        // 讀取新增的訂單資訊
         let order = await conn.query(
           SQL`SELECT * FROM order_main WHERE id = ${query.insertId};`
         );
         order = order[0];
 
+        // 依訂單與購物車項目數量用迴圈操作，插入對應的訂單項目資料
         for (let i = 0; i < cart.items.length; i++) {
           await conn.query(
             SQL`INSERT INTO order_sub (OrderId, ProductId, prodName, price, quantity) 
                     VALUES (${order.id}, ${cart.items[i].prodId}, ${cart.items[i].prodName}, ${cart.items[i].price}, ${cart.items[i].quantity});`
           );
 
+          // 依定單項數量刪減商品庫存，代表商品已被預訂不能再被選購
           await conn.query(
             SQL`UPDATE product SET quantity = ${
               Number(cart.items[i].prodStock) - Number(cart.items[i].quantity)
@@ -100,10 +118,11 @@ const orderController = {
           );
         }
 
+        /* 清空當前購物車，代表已訂購而非挑選階段 */
         await conn.query(SQL`DELETE FROM cart_sub WHERE CartId = ${cart.id};`);
-
         await conn.query(SQL`DELETE FROM cart_main WHERE id = ${cart.id};`);
 
+        // 轉到付款頁面
         return res.redirect(`/order/${order.id}/payment`);
       } catch (err) {
         await req.flash('errorMessages', '系統錯誤！');
@@ -132,6 +151,7 @@ const orderController = {
           // 防止對他人的訂單擅自操作
           await req.flash('errorMessages', '只能替自己的訂單付款！');
           res.redirect('/orders');
+          // '0'表示未付款，'1'為已付款，'-1'為取消，後二者不需付款
         } else if (order.status !== '0') {
           await req.flash('errorMessages', '此訂單已付清或取消，不開放付款！');
           res.redirect('/orders');
@@ -152,6 +172,7 @@ const orderController = {
             sn: 'test!@#$%^'
           };
 
+          // 模擬將金流服務提供的序號寫入訂單
           await conn.query(
             SQL`UPDATE order_main SET sn = ${tradeInfo.sn} WHERE id = ${req.params.id};`
           );
