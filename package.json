@@ -8,9 +8,11 @@
     "seed": "node seeders/_DB && node seeders/_tables && node seeders/members && node seeders/products"
   },
   "dependencies": {
+    "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
     "cookie-parser": "~1.4.4",
+    "crypto-js": "^4.1.1",
     "dayjs": "^1.11.2",
     "debug": "~2.6.9",
     "dotenv": "^16.0.0",
@@ -22,6 +24,7 @@
     "mariadb": "^3.0.0",
     "method-override": "^3.0.0",
     "morgan": "~1.9.1",
-    "sql-template-strings": "^2.2.2"
+    "sql-template-strings": "^2.2.2",
+    "uuid4": "^2.0.2"
   }
 }

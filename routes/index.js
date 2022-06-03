@@ -33,6 +33,8 @@ router.post('/order', orderController.postOrder);
 router.put('/order/:id/cancel', orderController.cancelOrder);
 // 付款頁面
 router.get('/order/:id/payment', orderController.getPayment);
+// 確認頁面
+router.get('/order/:id/confirm', orderController.confirmPayment);
 
 // 帳戶
 // 註冊頁面

@@ -3,6 +3,8 @@ const SQL = require('sql-template-strings');
 const pool = mariaDBConfig();
 let conn;
 
+const linePayApis = require('../config/linePayApis.js');
+
 /* 使用dayjs套件處理時間格式 */
 
 const dayjs = require('dayjs');
@@ -118,9 +120,25 @@ const orderController = {
           );
         }
 
+        /* 打LINE PAY API 產生付款連結 */
+        const amount = parseInt(req.body.amount); // 將金額從字串轉為整數
+        const linePayRespond = await linePayApis.postRequest(
+          amount,
+          order.id,
+          cart.items
+        );
+        console.log('LinePayRes: ', linePayRespond);
+
+        const transactionId = linePayRespond.info.transactionId; // 取得交易編號
+        const paymentUrl = linePayRespond.info.paymentUrl.web; // 取得付款連結
+
         /* 清空當前購物車，代表已訂購而非挑選階段 */
         await conn.query(SQL`DELETE FROM cart_sub WHERE CartId = ${cart.id};`);
         await conn.query(SQL`DELETE FROM cart_main WHERE id = ${cart.id};`);
+
+        await conn.query(
+          SQL`UPDATE order_main SET sn = ${transactionId}, paymentUrl = ${paymentUrl} WHERE id = ${order.id};`
+        );
 
         // 轉到付款頁面
         return res.redirect(`/order/${order.id}/payment`);
@@ -158,24 +176,12 @@ const orderController = {
         } else {
           const tradeInfo = {
             // 模擬金流服務提供的交易資訊
-            tradeLink: 'https://pay.line.me/portal/tw/main',
+            tradeLink: order.paymentUrl,
             orderAmount: order.amount,
-            // 模擬有效期限為七天
-            expiryDate:
-              dayjs(order.createdAt)
-                .add(7, 'day')
-                .tz('Asia/Taipei')
-                .format('YYYY-MM-DD (dddd)') + ' 23:59:59',
-
             shopName: process.env.WEB_TITLE,
             productCategoryName: process.env.WEB_PRODUCT_CATEGORY,
-            sn: 'test!@#$%^'
+            sn: order.sn
           };
-
-          // 模擬將金流服務提供的序號寫入訂單
-          await conn.query(
-            SQL`UPDATE order_main SET sn = ${tradeInfo.sn} WHERE id = ${req.params.id};`
-          );
 
           res.render('payment', { tradeInfo });
         }
@@ -214,6 +220,47 @@ const orderController = {
           return res.redirect('back');
         }
       } catch (err) {
+        await req.flash('errorMessages', '系統錯誤！');
+        res.redirect('back');
+        throw err;
+      } finally {
+        if (conn) conn.release();
+      }
+    }
+  },
+
+  confirmPayment: async (req, res) => {
+    if (!req.session.user) {
+      await req.flash('errorMessages', '需登入才能取消訂單！');
+      return res.redirect('back');
+    } else {
+      try {
+        conn = await pool.getConnection();
+        const order = await conn.query(
+          SQL`SELECT * FROM order_main WHERE id = ${req.params.id};`
+        );
+
+        if (order.UserId !== req.session.user.id) {
+          // 防止對他人的訂單擅自操作
+          await req.flash('errorMessages', '只能確認自己的訂單！');
+          return res.redirect('/orders');
+        } else {
+          /* 打LINE PAY API 確認付款成功 */
+          const amount = order[0].amount;
+          const transactionId = order[0].sn;
+
+          const linePayRespond = await linePayApis.postConfirm(
+            amount,
+            transactionId
+          );
+          console.log('LinePayRes: ', linePayRespond);
+          await req.flash('successMessages', '付款成功！');
+          await conn.query(
+            SQL`UPDATE order_main SET status = '1' WHERE id = ${req.params.id};`
+          );
+          return res.redirect('/orders');
+        }
+      } catch (error) {
         await req.flash('errorMessages', '系統錯誤！');
         res.redirect('back');
         throw err;

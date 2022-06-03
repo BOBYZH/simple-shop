@@ -74,7 +74,8 @@ let conn;
           address VARCHAR(100)        NOT NULL,
           amount    INT(10)      unsigned NOT NULL,
           status VARCHAR(10)   NOT NULL,
-          sn     VARCHAR(20),
+          sn     VARCHAR(50),
+          paymentUrl VARCHAR(512),
           createdAt  DATETIME  DEFAULT current_timestamp() ,
           PRIMARY KEY(id),
           FOREIGN KEY (UserId) REFERENCES member(id)
