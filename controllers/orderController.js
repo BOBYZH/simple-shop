@@ -131,7 +131,6 @@ const orderController = {
 
         /* 註：訂單編號在訂單產生後即固定，但同一張訂單的交易序號會在每次交易執行時變動(無論交易成功與否) */
         const sn = linePayRespond.sn; // 取得訂單編號
-        const transactionId = linePayRespond.info.transactionId; // 取得交易編號
         const paymentUrl = linePayRespond.info.paymentUrl.web; // 取得付款連結
 
         /* 清空當前購物車，代表已訂購而非挑選階段 */
