@@ -127,8 +127,10 @@ const orderController = {
           order.id,
           cart.items
         );
-        console.log('LinePayRes: ', linePayRespond);
+        console.log('LinePayRequestRes: ', linePayRespond);
 
+        /* 註：訂單編號在訂單產生後即固定，但同一張訂單的交易序號會在每次交易執行時變動(無論交易成功與否) */
+        const sn = linePayRespond.sn; // 取得訂單編號
         const transactionId = linePayRespond.info.transactionId; // 取得交易編號
         const paymentUrl = linePayRespond.info.paymentUrl.web; // 取得付款連結
 
@@ -137,7 +139,7 @@ const orderController = {
         await conn.query(SQL`DELETE FROM cart_main WHERE id = ${cart.id};`);
 
         await conn.query(
-          SQL`UPDATE order_main SET sn = ${transactionId}, paymentUrl = ${paymentUrl} WHERE id = ${order.id};`
+          SQL`UPDATE order_main SET sn = ${sn}, paymentUrl = ${paymentUrl} WHERE id = ${order.id};`
         );
 
         // 轉到付款頁面
@@ -235,10 +237,14 @@ const orderController = {
       return res.redirect('back');
     } else {
       try {
+        const transactionId = req.query.transactionId;
+        const orderId = req.query.orderId;
+
         conn = await pool.getConnection();
-        const order = await conn.query(
-          SQL`SELECT * FROM order_main WHERE id = ${req.params.id};`
+        let order = await conn.query(
+          SQL`SELECT UserId, amount FROM order_main WHERE sn = ${orderId};`
         );
+        order = order[0];
 
         if (order.UserId !== req.session.user.id) {
           // 防止對他人的訂單擅自操作
@@ -246,21 +252,25 @@ const orderController = {
           return res.redirect('/orders');
         } else {
           /* 打LINE PAY API 確認付款成功 */
-          const amount = order[0].amount;
-          const transactionId = order[0].sn;
-
           const linePayRespond = await linePayApis.postConfirm(
-            amount,
+            order.amount,
             transactionId
           );
-          console.log('LinePayRes: ', linePayRespond);
-          await req.flash('successMessages', '付款成功！');
-          await conn.query(
-            SQL`UPDATE order_main SET status = '1' WHERE id = ${req.params.id};`
-          );
-          return res.redirect('/orders');
+          console.log('LinePayConfirmRes: ', linePayRespond);
+
+          if (linePayRespond.returnCode === '0000') {
+            await req.flash('successMessages', '付款成功！');
+            // 更新訂單狀態為已付款
+            await conn.query(
+              SQL`UPDATE order_main SET status = '1' WHERE sn = ${orderId};`
+            );
+            return res.redirect('/orders');
+          } else {
+            await req.flash('errorMessages', '付款失敗，請重新嘗試！');
+            return res.redirect('back');
+          }
         }
-      } catch (error) {
+      } catch (err) {
         await req.flash('errorMessages', '系統錯誤！');
         res.redirect('back');
         throw err;
