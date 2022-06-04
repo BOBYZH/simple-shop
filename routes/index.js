@@ -34,7 +34,7 @@ router.put('/order/:id/cancel', orderController.cancelOrder);
 // 付款頁面
 router.get('/order/:id/payment', orderController.getPayment);
 // 確認頁面
-router.get('/order/:id/confirm', orderController.confirmPayment);
+router.get('/orders/confirm', orderController.confirmPayment);
 
 // 帳戶
 // 註冊頁面
@@ -50,7 +50,7 @@ router.post('/logout', memberController.logout);
 
 // 避免404畫面出現
 router.all('*', async (req, res) => {
-  await req.flash('errorMessages', '無效的連結！');
+  await req.flash('errorMessages', '系統錯誤，請重新嘗試與檢查購物車！');
   res.redirect('/');
 });
 
