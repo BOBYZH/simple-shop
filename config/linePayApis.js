@@ -1,15 +1,18 @@
 /*
 串接金流API使用
-參考：https://ithelp.ithome.com.tw/articles/10272950
+參考：
+https://ithelp.ithome.com.tw/articles/10272950
+https://ithelp.ithome.com.tw/articles/10227794
 */
 const axios = require('axios');
 const uuid = require('uuid4');
 const crypto = require('crypto-js');
 
+// 簽章合成公式所需的資料
 const key = process.env.LINE_PAY_CHANNEL_SECRET;
 const nonce = uuid();
 
-// 加密
+// Header 與所需的 HMAC-SHA256 的 Base64 加密簽章相關函式
 function encryptCrypto (route, body) {
   return crypto.HmacSHA256(key + route + JSON.stringify(body) + nonce, key);
 }
@@ -18,7 +21,6 @@ function encHmacBase64 (encrypt) {
   return crypto.enc.Base64.stringify(encrypt);
 }
 
-// headers
 function setConfigs (hmacBase64) {
   return {
     headers: {
@@ -31,6 +33,7 @@ function setConfigs (hmacBase64) {
 }
 
 const linePayApis = {
+  // Request API，請求付款資訊
   postRequest: async (amount, orderId, cartItems) => {
     const productName = process.env.WEB_PRODUCT_CATEGORY;
     const body = {
@@ -46,11 +49,13 @@ const linePayApis = {
         }
       ],
       redirectUrls: {
-        confirmUrl: process.env.WEB_URL + '/order/' + orderId + '/confirm',
-        cancelUrl: process.env.WEB_URL + '/'
+        confirmUrl: process.env.WEB_URL + '/orders/confirm',
+        confirmUrlType: 'CLIENT',
+        cancelUrl: process.env.WEB_URL + '/orders'
       }
     };
 
+    // 將商品項目寫入購物車
     for (let i = 0; i < cartItems.length; i++) {
       body.packages[0].products.push({
         id: cartItems[i].prodId,
@@ -71,8 +76,12 @@ const linePayApis = {
       configs
     );
 
+    // 將nonce作為訂單標號，也是LinePay的orderId與資料庫中的sn
+    res.data.sn = nonce;
+
     return res.data;
   },
+  // 用戶確認付款後交易狀態完成
   postConfirm: async (amount, transactionId) => {
     const body = {
       amount: amount,
