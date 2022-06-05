@@ -63,13 +63,13 @@ const cartController = {
       cart = cart[0]; // 由於只有一個購物車，需去掉外層陣列以便後續controller/views操作
 
       /* 同樣模擬sequelize的findOrCreate，找尋是否已有對應的購物車項目 */
-      let cartItem = await conn.query(
-        // JOIN查詢購物車項目與對應的商品資料
-        SQL`SELECT cart_sub.*, product.id as prodId, product.imgUrl, product.prodName, product.price, 
+      // JOIN查詢購物車項目與對應的商品資料
+      const cartSubQuery =
+      SQL`SELECT cart_sub.*, product.id as prodId, product.imgUrl, product.prodName, product.price, 
           product.quantity as prodStock FROM product 
           JOIN cart_sub ON product.id = cart_sub.ProductId
-          WHERE cartId = ${cart.id} and ProductId = ${req.body.productId};`
-      );
+          WHERE cartId = ${cart.id} and ProductId = ${req.body.productId};`;
+      let cartItem = await conn.query(cartSubQuery);
 
       if (cartItem.length === 0) {
         // 沒有時補產生
@@ -78,10 +78,7 @@ const cartController = {
         );
         cartItem = await conn.query(
           // 重新JOIN查詢購物車項目與商品
-          SQL`SELECT cart_sub.*, product.id as prodId, product.imgUrl, product.prodName, product.price, 
-          product.quantity as prodStock FROM product 
-          JOIN cart_sub ON product.id = cart_sub.ProductId
-          WHERE cartId = ${cart.id} and ProductId = ${req.body.productId};`
+          cartSubQuery
         );
       }
       cartItem = cartItem[0]; // 由於隨購物車新增的項目只有一個，也去陣列以便後續操作
@@ -98,7 +95,7 @@ const cartController = {
         const link = '/cart/';
         await req.flash(
           'successMessages',
-          '已成功將商品加入<strong><a class="text-info" href="' +
+          '已成功將商品加入<strong><a class="text-primary" href="' +
             link +
             '">購物車</a></strong> ！'
         );
