@@ -134,7 +134,9 @@ const orderController = {
         const paymentUrl = linePayRespond.info.paymentUrl.web; // 取得付款連結
 
         /* 清空當前購物車，代表已訂購而非挑選階段 */
-        await conn.query(SQL`DELETE FROM cart_sub WHERE CartId = ${cart.id};`);
+        await conn.query(
+          SQL`DELETE FROM cart_sub WHERE CartId = ${cart.id};`
+        );
         await conn.query(SQL`DELETE FROM cart_main WHERE id = ${cart.id};`);
 
         await conn.query(
@@ -142,6 +144,7 @@ const orderController = {
         );
 
         // 轉到付款頁面
+        await req.flash('successMessages', '訂單已建立，請前往付款！');
         return res.redirect(`/order/${order.id}/payment`);
       } catch (err) {
         await req.flash('errorMessages', '系統錯誤！');

@@ -57,20 +57,20 @@
                       <tr>
                         <td>
                           <p>狀態：
-                            <% if (order.status==='0' ) { %>
-                              <span
-                                class="text-warning font-weight-bolder fw-bolder text-decoration-underline">未付款</span>
-                              <% } %>
-
-                                <% if (order.status==='1' ) { %>
-                                  <span
-                                    class="text-success font-weight-bolder fw-bolder text-decoration-underline">已付款</span>
-                                  <% } %>
-
-                                    <% if (order.status==='-1' ) { %>
-                                      <span
-                                        class="text-muted font-weight-bolder fw-bolder text-decoration-underline">已取消</span>
-                                      <% } %>
+                            <span class="font-weight-bolder fw-bolder text-decoration-underline
+                              <% switch (order.status) { 
+                                case '0': %>
+                                text-warning">顧客未付款
+                              <% break case '1' : %>
+                                text-success">顧客已付款
+                                <% break case '2' : %>
+                                  text-info">店家已確認
+                                  <% break case '3' : %>
+                                    text-primary">店家已出貨
+                                    <% break case '-1' : %>
+                                      text-muted">顧客已取消
+                                      <% break default: break; } %>
+                            </span>
                           </p>
                         </td>
                         <td colspan="2"></td>
@@ -87,10 +87,10 @@
             <div class="col-12 col-md-5 d-flex justify-content-center">
               <div class="row ml-5">
                 <div>
-                        <h5 class="mt-3">訂單編號：</h5>
-                        <small>
-                          <%= order.sn %>
-                        </small>
+                  <h5 class="mt-3">訂單編號：</h5>
+                  <small>
+                    <%= order.sn %>
+                  </small>
                   <h5 class="mt-3">收件者資訊</h5>
                   <ul class="mt-4">
                     <li>姓名： <%= order.name %>
