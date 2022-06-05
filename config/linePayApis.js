@@ -10,7 +10,8 @@ const crypto = require('crypto-js');
 
 // 簽章合成公式所需的資料
 const key = process.env.LINE_PAY_CHANNEL_SECRET;
-const nonce = uuid();
+// 定義空的隨機數變數，以符合semistandard的格式
+let nonce;
 
 // Header 與所需的 HMAC-SHA256 的 Base64 加密簽章相關函式
 function encryptCrypto (route, body) {
@@ -35,6 +36,8 @@ function setConfigs (hmacBase64) {
 const linePayApis = {
   // Request API，請求付款資訊
   postRequest: async (amount, orderId, cartItems) => {
+    // 將uuid移到函式內，避免每次呼叫時uuid沒有更新
+    nonce = uuid();
     const productName = process.env.WEB_PRODUCT_CATEGORY;
     const body = {
       amount: amount,
