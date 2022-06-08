@@ -27,14 +27,14 @@ router.delete('/cartItem/:id', cartController.deleteCartItem);
 // 訂單
 // 訂單頁面
 router.get('/orders', orderController.getOrders);
+// 確認頁面
+router.get('/orders/confirm', orderController.confirmPayment);
 // 新增訂單
 router.post('/order', orderController.postOrder);
 // 取消訂單
 router.put('/order/:id/cancel', orderController.cancelOrder);
 // 付款頁面
 router.get('/order/:id/payment', orderController.getPayment);
-// 確認頁面
-router.get('/orders/confirm', orderController.confirmPayment);
 
 // 帳戶
 // 註冊頁面
