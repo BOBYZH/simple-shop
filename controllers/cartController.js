@@ -74,7 +74,7 @@ const cartController = {
       if (cartItem.length === 0) {
         // 沒有時補產生
         await conn.query(
-          `INSERT INTO cart_sub (quantity, CartId, ProductId) VALUES (0, ${cart.id}, ${req.body.productId});`
+          SQL`INSERT INTO cart_sub (quantity, CartId, ProductId) VALUES (0, ${cart.id}, ${req.body.productId});`
         );
         cartItem = await conn.query(
           // 重新JOIN查詢購物車項目與商品
@@ -88,7 +88,7 @@ const cartController = {
         return res.redirect('back');
       } else {
         await conn.query(
-          `UPDATE cart_sub SET quantity = ${
+          SQL`UPDATE cart_sub SET quantity = ${
             cartItem.quantity + Number(req.body.quantity)
           } WHERE cartId = ${cart.id} and ProductId = ${req.body.productId};`
         );
