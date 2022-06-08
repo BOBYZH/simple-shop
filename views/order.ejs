@@ -61,15 +61,21 @@
                               <% switch (order.status) { 
                                 case '0': %>
                                 text-warning">顧客未付款
-                              <% break case '1' : %>
+                              <% break
+                               case '1' : %>
                                 text-success">顧客已付款
-                                <% break case '2' : %>
+                                <% break
+                                 case '2' : %>
                                   text-info">店家已確認
-                                  <% break case '3' : %>
+                                  <% break
+                                   case '3' : %>
                                     text-primary">店家已出貨
-                                    <% break case '-1' : %>
+                                    <% break
+                                     case '-1' : %>
                                       text-muted">顧客已取消
-                                      <% break default: break; } %>
+                                      <% break
+                                       default: 
+                                       break } %>
                             </span>
                           </p>
                         </td>
