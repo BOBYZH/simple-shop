@@ -82,6 +82,7 @@ const linePayApis = {
     // 將nonce作為訂單標號，也是LinePay的orderId與資料庫中的sn
     res.data.sn = nonce;
 
+    console.log('LinePayRequestRes: ', res.data);
     return res.data;
   },
   // 用戶確認付款後交易狀態完成
@@ -102,6 +103,7 @@ const linePayApis = {
       configs
     );
 
+    console.log('LinePayRequestRes: ', res.data);
     return res.data;
   }
 };
