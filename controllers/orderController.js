@@ -89,6 +89,10 @@ const orderController = {
 
         cart.items = items; // 將購物車項目插入購物車以便後續操作與EJS渲染
 
+        // 使用交易狀態，避免中斷或錯誤發生非預期的寫入結果
+        await conn.query('SET AUTOCOMMIT = 0');
+        await conn.query('START TRANSACTION');
+
         // 依表單回傳建立訂單，其中姓名、電話與地址以AES加密儲存，避免客戶資料直接洩露
         const query = await conn.query(
           SQL`INSERT INTO order_main (UserId, name, address, phone, status, amount) 
@@ -112,12 +116,23 @@ const orderController = {
                     VALUES (${order.id}, ${cart.items[i].prodId}, ${cart.items[i].prodName}, ${cart.items[i].price}, ${cart.items[i].quantity});`
           );
 
-          // 依定單項數量刪減商品庫存，代表商品已被預訂不能再被選購
-          await conn.query(
-            SQL`UPDATE product SET quantity = ${
-              Number(cart.items[i].prodStock) - Number(cart.items[i].quantity)
-            } WHERE id = ${cart.items[i].prodId};`
+          // 檢查資料庫的商品庫存數量
+          const quantity = await conn.query(
+            SQL`SELECT quantity FROM product WHERE id = ${cart.items[i].prodId};`
           );
+          // 如果庫存數量不足，則回傳錯誤訊息，避免改買數量超過庫存數量時當掉
+          if (quantity[0].quantity < cart.items[i].quantity) {
+            await conn.query('ROLLBACK');
+            await req.flash('errorMessages', '庫存不足，請減少訂購數量！');
+            return res.redirect('back');
+          } else {
+            // 依定單項數量刪減商品庫存，代表商品已被預訂不能再被選購
+            await conn.query(
+              SQL`UPDATE product SET quantity = ${
+                Number(cart.items[i].prodStock) - Number(cart.items[i].quantity)
+              } WHERE id = ${cart.items[i].prodId};`
+            );
+          }
         }
 
         /* 打LINE PAY API 產生付款連結 */
@@ -127,30 +142,43 @@ const orderController = {
           order.id,
           cart.items
         );
-        console.log('LinePayRequestRes: ', linePayRespond);
 
-        /* 註：訂單編號在訂單產生後即固定，但同一張訂單的交易序號會在每次交易執行時變動(無論交易成功與否) */
-        const sn = linePayRespond.sn; // 取得訂單編號
-        const paymentUrl = linePayRespond.info.paymentUrl.web; // 取得付款連結
+        // 如果LinePayAPI發生錯誤，倒回交易狀態前的資料，並回傳錯誤訊息
+        if (linePayRespond.returnCode !== '0000') {
+          await conn.query('ROLLBACK');
+          await req.flash(
+            'errorMessages',
+            '訂單產生失敗，請檢查購物車並重試！'
+          );
+          return res.redirect('back');
+        } else {
+          /* 註：訂單編號在訂單產生後即固定，但同一張訂單的交易序號會在每次交易執行時變動(無論交易成功與否) */
+          const sn = linePayRespond.sn; // 取得訂單編號
+          const paymentUrl = linePayRespond.info.paymentUrl.web; // 取得付款連結
 
-        /* 清空當前購物車，代表已訂購而非挑選階段 */
-        await conn.query(
-          SQL`DELETE FROM cart_sub WHERE CartId = ${cart.id};`
-        );
-        await conn.query(SQL`DELETE FROM cart_main WHERE id = ${cart.id};`);
+          /* 清空當前購物車，代表已訂購而非挑選階段 */
+          await conn.query(
+            SQL`DELETE FROM cart_sub WHERE CartId = ${cart.id};`
+          );
+          await conn.query(SQL`DELETE FROM cart_main WHERE id = ${cart.id};`);
 
-        await conn.query(
-          SQL`UPDATE order_main SET sn = ${sn}, paymentUrl = ${paymentUrl} WHERE id = ${order.id};`
-        );
+          await conn.query(
+            SQL`UPDATE order_main SET sn = ${sn}, paymentUrl = ${paymentUrl} WHERE id = ${order.id};`
+          );
 
-        // 轉到付款頁面
-        await req.flash('successMessages', '訂單已建立，請前往付款！');
-        return res.redirect(`/order/${order.id}/payment`);
+          // 如果交易沒發生錯誤中斷，則結束交易狀態
+          await conn.query('COMMIT');
+
+          // 轉到付款頁面
+          await req.flash('successMessages', '訂單已建立，請前往付款！');
+          return res.redirect(`/order/${order.id}/payment`);
+        }
       } catch (err) {
         await req.flash('errorMessages', '系統錯誤！');
         res.redirect('back');
         throw err;
       } finally {
+        await conn.query('SET AUTOCOMMIT = 1');
         if (conn) conn.release();
       }
     }
@@ -217,10 +245,30 @@ const orderController = {
           await req.flash('errorMessages', '只能取消自己的訂單！');
           return res.redirect('/orders');
         } else {
+          // 將取消訂單後的商品數量加回去
+          const orderItems = await conn.query(
+            SQL`SELECT order_sub.*, product.id as prodId,
+            product.quantity as prodStock 
+            FROM product 
+            JOIN order_sub ON product.id = order_sub.ProductId
+            WHERE OrderId = ${order.id};`
+          );
+
+          await conn.query('SET AUTOCOMMIT = 0');
+          await conn.query('START TRANSACTION');
+          orderItems.forEach(async (orderItem) => {
+            await conn.query(
+              SQL`UPDATE product SET quantity = quantity + ${orderItem.quantity} WHERE id = ${orderItem.prodId};`
+            );
+          });
+
           await conn.query(
             SQL`UPDATE order_main SET status = '-1' WHERE id = ${req.params.id};`
           );
 
+          await conn.query('COMMIT');
+          await conn.query('SET AUTOCOMMIT = 1');
+          await req.flash('successMessages', '訂單已取消！');
           return res.redirect('back');
         }
       } catch (err) {
@@ -258,7 +306,6 @@ const orderController = {
             order.amount,
             transactionId
           );
-          console.log('LinePayConfirmRes: ', linePayRespond);
 
           if (linePayRespond.returnCode === '0000') {
             await req.flash('successMessages', '付款成功！');
