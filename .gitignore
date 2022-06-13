@@ -1,3 +1,6 @@
+# test coverage output
+.nyc_output/
+# ngrok app
 ngrok
 ngrok.exe
 # Logs
