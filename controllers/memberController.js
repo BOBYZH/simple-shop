@@ -19,6 +19,9 @@ const memberController = {
     if (req.body.password !== req.body.password2) {
       await req.flash('errorMessages', '密碼輸入不相同');
       return res.redirect('back');
+    } else if (req.body.email === '' || req.body.password === '') {
+      await req.flash('errorMessages', 'email或密碼不可為空');
+      return res.redirect('back');
     }
     try {
       conn = await pool.getConnection();
