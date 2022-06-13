@@ -1,0 +1,14 @@
+{
+  "include": [
+    "controllers/memberController.js"
+  ],
+  "reporter": [
+    "text",
+    "html"
+  ],
+  "check-coverage": true,
+  "lines": 10,
+  "statements": 10,
+  "functions": 10,
+  "branches": 10
+} 
