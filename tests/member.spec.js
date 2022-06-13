@@ -1,10 +1,10 @@
-/* eslint-env mocha */
-// const { expect } = require('chai');
+const { describe, it, before, after } = require('mocha');
 const { expect } = require('chai');
 const chai = require('chai');
-chai.use(require('sinon-chai'));
 chai.should(); // 包含include語法
+
 const request = require('supertest');
+
 const app = require('../app');
 
 const mariaDBConfig = require('../config/mariaDB.js');
@@ -19,7 +19,7 @@ describe('# 會員系統', () => {
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
   });
 
-  context('## GET /signup', () => {
+  describe('## GET /signup', () => {
     it('### 進入註冊頁面', (done) => {
       request(app)
         .get('/signup')
@@ -32,7 +32,7 @@ describe('# 會員系統', () => {
     });
   });
 
-  context('## POST /signup', () => {
+  describe('## POST /signup', () => {
     it('### 成功註冊', (done) => {
       request(app)
         .post('/signup')
@@ -53,7 +53,7 @@ describe('# 會員系統', () => {
     });
   });
 
-  context('## GET /signin', () => {
+  describe('## GET /signin', () => {
     it('### 進入登入頁面', (done) => {
       request(app)
         .get('/signin')
@@ -66,7 +66,7 @@ describe('# 會員系統', () => {
     });
   });
 
-  context('## POST /signin', () => {
+  describe('## POST /signin', () => {
     it('### 成功登入', (done) => {
       request(app)
         .post('/signin')
@@ -85,7 +85,7 @@ describe('# 會員系統', () => {
     });
   });
 
-  context('## POST /logout', () => {
+  describe('## POST /logout', () => {
     it('### 成功登出', (done) => {
       request(app)
         .post('/logout')
