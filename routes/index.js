@@ -6,9 +6,14 @@ const productController = require('../controllers/productController');
 const cartController = require('../controllers/cartController');
 const orderController = require('../controllers/orderController');
 
+// 首頁，導向所有商品頁面
+router.get('/', (req, res) => {
+  res.redirect('/products');
+});
+
 // 商品
-// 所有商品頁面(首頁)
-router.get('/', productController.getProducts);
+// 所有商品頁面
+router.get('/products', productController.getProducts);
 // 個別商品頁面
 router.get('/products/:id', productController.getProduct);
 
