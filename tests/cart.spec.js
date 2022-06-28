@@ -1,5 +1,4 @@
 const { describe, it, before, after } = require('mocha');
-// const sinon = require('sinon');
 const request = require('supertest');
 /* 每個測試項目間的cookie似乎是獨立的，
 因此沒辦法直接將上一個項目產生的session，直接在下一個項目使用，
@@ -8,7 +7,6 @@ const request = require('supertest');
 let cookies;
 
 const app = require('../app');
-// const helpers = require('./helpers');
 
 const SQL = require('sql-template-strings');
 const mariaDBConfig = require('../config/mariaDB.js');
