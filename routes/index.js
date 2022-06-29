@@ -32,9 +32,9 @@ router.delete('/cartItem/:id', cartController.deleteCartItem);
 // 訂單
 // 訂單頁面
 router.get('/orders', orderController.getOrders);
-// 確認頁面
+// 確認訂單(串接API用)
 router.get('/orders/confirm', orderController.confirmPayment);
-// 新增訂單
+// 新增訂單(會觸發API)
 router.post('/order', orderController.postOrder);
 // 取消訂單
 router.put('/order/:id/cancel', orderController.cancelOrder);
