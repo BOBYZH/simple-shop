@@ -48,7 +48,7 @@ describe('# 會員系統', () => {
           const member = await conn.query('SELECT email FROM member;');
           expect(member[0].email).to.equal('user@email.com');
           expect(res.header.location).to.equal('/signin');
-          return done(err);
+          return done();
         });
     });
   });
@@ -80,7 +80,7 @@ describe('# 會員系統', () => {
         .end(async (err, res) => {
           if (err) return done(err);
           expect(res.header.location).to.equal('/');
-          return done(err);
+          return done();
         });
     });
   });
@@ -94,7 +94,7 @@ describe('# 會員系統', () => {
         .end(async (err, res) => {
           if (err) return done(err);
           expect(res.header.location).to.equal('/');
-          return done(err);
+          return done();
         });
     });
   });
