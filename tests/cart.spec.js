@@ -78,7 +78,7 @@ describe('# 購物車頁面', () => {
       // 測試用的他人購物車與項目
       await conn.query('INSERT INTO cart_main (id) VALUES (2);');
       await conn.query(
-        SQL`INSERT INTO cart_sub (cartId, ProductId, quantity) VALUES (${2}, ${1}, ${3});`
+        'INSERT INTO cart_sub (cartId, ProductId, quantity) VALUES (2, 1, 3);'
       );
     });
 
@@ -170,9 +170,8 @@ describe('# 購物車頁面', () => {
           );
           // 轉成可操作的空陣列
           cartItems = JSON.parse(JSON.stringify(cartItems));
-          // cartItems因cartItem被刪除內容為空，新插入的內容必然在陣列的第一個
-          cartItems.push('none');
-          cartItems[0].should.be.equal('none');
+          // 刪除後購物車項目陣列長度為0
+          cartItems.length.should.be.equal(0);
           return done();
         });
     });
