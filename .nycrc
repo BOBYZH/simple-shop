@@ -1,6 +1,9 @@
 {
   "include": [
-    "controllers/memberController.js"
+    "controllers/memberController.js",
+    "controllers/productController.js",
+    "controllers/cartController.js",
+    "controllers/orderController.js"
   ],
   "reporter": [
     "text",
