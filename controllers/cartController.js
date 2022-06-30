@@ -9,7 +9,7 @@ const cartController = {
       conn = await pool.getConnection();
 
       /* 列出使用者購物車與其中挑選項目 */
-      let cart = await conn.query(
+      const cart = await conn.query(
         // 列出對應使用者當前session儲存cartId的特定購物車
         SQL`SELECT * FROM cart_main WHERE id = ${req.session.cartId || 0};` // 找不到購物車的話，定義cartId為0回傳空物件
       );
@@ -21,9 +21,6 @@ const cartController = {
       );
 
       cart.items = items; // 將購物車項目插入購物車，以便後續在EJS渲染時讀取
-      cart = cart || { items: [] }; // 找不到購物車的話，回傳空的內容(代表沒加入商品項目時，購物車是空的)
-
-      // console.log('cart with items', cart)
 
       /* 定義購物車所有項目的價格加總 */
       const totalPrice =
