@@ -186,6 +186,20 @@ describe('# 購物車頁面', () => {
   });
 
   describe('## 取消購買的商品', () => {
+    before(async () => {
+      // 建立另一個購物車項目，以便測試總金額計算
+      await conn.query(
+      `
+        INSERT INTO product (imgUrl, prodName, description, price, quantity) 
+        VALUES ('https://static.wikia.nocookie.net/pokemongo/images/4/45/Great_Ball.png', 
+        '超級球', '性能還算不錯的球。比起精靈球更容易捉到寶可夢。', 600, 200);
+        `
+      );
+      await conn.query(
+        'INSERT INTO cart_sub (cartId, ProductId, quantity) VALUES (1, 2, 1);'
+      );
+    });
+
     it('### 先顯示已有商品的購物車頁面', (done) => {
       request(app)
         .get('/cart')
@@ -194,8 +208,7 @@ describe('# 購物車頁面', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          res.text.should.include('X 1'); // 1+1-1=1
-          res.text.should.include('總金額： NT$ 200');
+          res.text.should.include('總金額： NT$ 800'); // 200+600=800
           return done();
         });
     });
@@ -213,8 +226,8 @@ describe('# 購物車頁面', () => {
           );
           // 轉成可操作的空陣列
           cartItems = JSON.parse(JSON.stringify(cartItems));
-          // 刪除後購物車項目陣列長度為0
-          cartItems.length.should.be.equal(0);
+          // 刪除後購物車項目陣列長度為1
+          cartItems.length.should.be.equal(1);
           return done();
         });
     });
