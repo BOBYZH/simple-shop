@@ -23,7 +23,7 @@ describe('# 購物車頁面', () => {
     await conn.query('TRUNCATE TABLE `cart_sub`;');
   });
 
-  describe('## GET /cart', () => {
+  describe('## 查看購物車', () => {
     it('### 預設顯示無項目的購物車頁面', (done) => {
       request(app)
         .get('/cart')
@@ -34,9 +34,36 @@ describe('# 購物車頁面', () => {
           return done();
         });
     });
+
+    it('### 新增超出庫存數量時導回且不新增購物車項目', (done) => {
+      request(app)
+        .post('/cart')
+        .send({
+          productId: 1,
+          quantity: 601
+        })
+        .set('Accept', 'application/json')
+        .expect(302)
+        .end(async (err, res) => {
+          if (err) return done(err);
+          const carts = await conn.query('SELECT * FROM cart_main;');
+          let cartItem = await conn.query(
+            SQL`SELECT * FROM cart_sub WHERE cartId = ${carts[0].id};`
+          );
+          cartItem = JSON.parse(JSON.stringify(cartItem));
+          cartItem.length.should.be.equal(0);
+
+          return done();
+        });
+    });
+
+    after(async () => { // 測試超買庫存後清除資料，避免影響後面測試
+      await conn.query('TRUNCATE TABLE `cart_main`;');
+      await conn.query('TRUNCATE TABLE `cart_sub`;');
+    });
   });
 
-  describe('## POST /cart', () => {
+  describe('## 新增購物車', () => {
     before(async () => {
       // 測試用商品
       await conn.query(
@@ -73,7 +100,7 @@ describe('# 購物車頁面', () => {
     });
   });
 
-  describe('## PATCH /cartItem/:id/add', () => {
+  describe('## 增加購買數量', () => {
     before(async () => {
       // 測試用的他人購物車與項目
       await conn.query('INSERT INTO cart_main (id) VALUES (2);');
@@ -95,6 +122,7 @@ describe('# 購物車頁面', () => {
             'SELECT * FROM cart_sub WHERE cartId = 1;'
           );
           cartItem[0].quantity.should.be.equal(2);
+          cookies = res.headers['set-cookie'].pop().split(';')[0];
           return done();
         });
     });
@@ -119,7 +147,7 @@ describe('# 購物車頁面', () => {
     });
   });
 
-  describe('## PATCH /cartItem/:id/sub', () => {
+  describe('## 減少購買數量', () => {
     it('### 減少1個商品項目數量', (done) => {
       request(app)
         .patch('/cartItem/1/sub')
@@ -132,6 +160,7 @@ describe('# 購物車頁面', () => {
             'SELECT * FROM cart_sub WHERE cartId = 1;'
           );
           cartItem[0].quantity.should.be.equal(1);
+          cookies = res.headers['set-cookie'].pop().split(';')[0];
           return done();
         });
     });
@@ -156,7 +185,21 @@ describe('# 購物車頁面', () => {
     });
   });
 
-  describe('## DELETE /cartItem/:id', () => {
+  describe('## 取消購買的商品', () => {
+    it('### 先顯示已有商品的購物車頁面', (done) => {
+      request(app)
+        .get('/cart')
+        .set('Accept', 'application/json')
+        .set('Cookie', [cookies])
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.text.should.include('X 1'); // 1+1-1=1
+          res.text.should.include('總金額： NT$ 200');
+          return done();
+        });
+    });
+
     it('### 從購物車刪除商品項目', (done) => {
       request(app)
         .delete('/cartItem/1')

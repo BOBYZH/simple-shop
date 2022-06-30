@@ -1,9 +1,11 @@
-const { describe, it, before, after } = require('mocha');
+const { describe, it, before, after, afterEach } = require('mocha');
 const request = require('supertest');
 const sinon = require('sinon');
 /* 另設一個變數儲存cookie內容，以在不同測試項目使用
 參考：https://stackoverflow.com/questions/39118250/accessing-req-session-object-when-writing-tests-that-use-supertest */
 let cookies;
+
+// const sandbox = sinon.createSandbox();
 
 const app = require('../app');
 
@@ -44,6 +46,39 @@ describe('# 訂單相關頁面', () => {
         )}');
         `
     );
+  });
+
+  describe('## 未登入時進行訂單相關操作', () => {
+    it('### 無法進入訂單頁面而是導回', (done) => {
+      request(app)
+        .get('/orders')
+        .set('Accept', 'application/json')
+        .expect(302)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.headers.location.should.equal('/');
+          return done();
+        });
+    });
+
+    it('### 無法建立訂單頁面也是導回', (done) => {
+      request(app)
+        .post('/orders')
+        .set('Accept', 'application/json')
+        .send({
+          name: 'member Test',
+          address: 'test address',
+          phone: '0987654321',
+          status: '0',
+          amount: 400
+        })
+        .expect(302)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.headers.location.should.equal('/');
+          return done();
+        });
+    });
   });
 
   describe('## 先取得cookie-based session', () => {
@@ -93,7 +128,7 @@ describe('# 訂單相關頁面', () => {
     });
   });
 
-  describe('## GET /orders', () => {
+  describe('## 訂單頁面', () => {
     it('### 預設顯示無項目的訂單頁面', (done) => {
       request(app)
         .get('/orders')
@@ -109,7 +144,99 @@ describe('# 訂單相關頁面', () => {
     });
   });
 
-  describe('## POST /order', () => {
+  describe('## 新增訂單失敗', () => {
+    before(async () => {
+      // 模擬LinePay API回傳的訂單資料，替代實際打API的動作
+      this.linePayRespond = sinon
+        .stub(require('../config/linePayApis'), 'postRequest')
+        .returns({
+          returnCode: '9000',
+          returnMessage: 'Error.'
+        });
+
+      // 先修改購物車內的商品數量，測試庫存不足時的錯誤訊息
+      await conn.query(
+          `
+          UPDATE cart_sub SET quantity = 601 WHERE ProductId = 1;
+          `
+      );
+    });
+
+    it('### 訂單超過庫存數量時觸發ROLLBACK取消', (done) => {
+      request(app)
+        .post('/order')
+        .send({
+          name: 'member Test',
+          address: 'test address',
+          phone: '0987654321',
+          status: '0',
+          amount: 200 * 601
+        })
+        .set('Accept', 'application/json')
+        .set('Cookie', [cookies])
+        .expect(302)
+        .end(async (err, res) => {
+          if (err) return done(err);
+          // 訂單資料檢查
+          let orders = await conn.query(
+            'SELECT * FROM order_main;'
+          );
+          orders = JSON.parse(JSON.stringify(orders));
+          orders.length.should.equal(0); // 沒有產生訂單
+
+          // 導回首頁
+          res.headers.location.should.be.equal('/');
+
+          // 改回購物車內的商品數量，以進行成功產生訂單的測試
+          await conn.query(
+            'UPDATE cart_sub SET quantity = 2 WHERE ProductId = 1;'
+          );
+
+          return done();
+        });
+    });
+
+    it('### 從API回傳錯誤訊息而未新增訂單', (done) => {
+      request(app)
+        .post('/order')
+        .send({
+          name: 'member Test',
+          address: 'test address',
+          phone: '0987654321',
+          status: '0',
+          amount: 400
+        })
+        .set('Accept', 'application/json')
+        .set('Cookie', [cookies])
+        .expect(302)
+        .end(async (err, res) => {
+          if (err) return done(err);
+
+          let orders = await conn.query(
+            'SELECT * FROM order_main;'
+          );
+          orders = JSON.parse(JSON.stringify(orders));
+          orders.length.should.equal(0); // 沒有產生訂單
+
+          // 導回根目錄
+          res.headers.location.should.be.equal('/');
+
+          return done();
+        });
+    });
+
+    afterEach(async () => {
+      // 讓訂單與項目id從1開始
+      await conn.query('TRUNCATE TABLE `order_main`;');
+      await conn.query('TRUNCATE TABLE `order_sub`;');
+    });
+
+    after(async () => {
+      this.linePayRespond.restore();
+    });
+  });
+
+  describe('## 新增訂單成功', () => {
     before(async () => {
       // 模擬LinePay API回傳的訂單資料，替代實際打API的動作
       this.linePayRespond = sinon
@@ -197,9 +324,13 @@ describe('# 訂單相關頁面', () => {
           return done();
         });
     });
+
+    after(async () => {
+      this.linePayRespond.restore();
+    });
   });
 
-  describe('## POST /order/:id/cancel', () => {
+  describe('## 取消訂單', () => {
     // 額外建立訂單資料，以便測試取消功能
     before(async () => {
       // 同使用者的另一筆訂單資料
@@ -227,6 +358,47 @@ describe('# 訂單相關頁面', () => {
       await conn.query(
         'INSERT INTO order_sub (OrderId, ProductId, prodName, price, quantity) VALUES (3, 1, "精靈球", 200, 5);'
       );
+    });
+
+    it('### 顯示使用者的2筆訂單頁面', (done) => {
+      request(app)
+        .get('/orders')
+        .set('Accept', 'application/json')
+        // 將上一個測試項目產生的cookie-based session以變數設置
+        .set('Cookie', [cookies])
+        .expect(200)
+        .end(async (err, res) => {
+          if (err) return done(err);
+
+          let orders = await conn.query(
+            SQL`SELECT id, MemberId, 
+          AES_DECRYPT(UNHEX(name), ${process.env.AES_KEY}) as name, 
+          AES_DECRYPT(UNHEX(phone), ${process.env.AES_KEY}) as phone,
+          AES_DECRYPT(UNHEX(address), ${process.env.AES_KEY}) as address, 
+          amount, status, sn, paymentUrl, createdAt 
+          FROM order_main
+          WHERE MemberId = 1;`
+          );
+          orders = JSON.parse(JSON.stringify(orders));
+          orders.length.should.be.equal(2);
+
+          let orderItems = await conn.query(
+            'SELECT * FROM order_sub WHERE orderId = 1 OR orderId = 2;'
+          );
+          orderItems = JSON.parse(JSON.stringify(orderItems));
+          orderItems[0].quantity.should.be.equal(2);
+          orderItems[1].quantity.should.be.equal(3);
+
+          res.text.should.include('我的訂單');
+          res.text.should.include('訂單編號');
+          // 顯示二筆訂單的資料
+          res.text.should.include('總計： NT$ 400');
+          res.text.should.include('電話： 0987654321');
+          res.text.should.include('總計： NT$ 600');
+          res.text.should.include('電話： 0912345678');
+
+          return done();
+        });
     });
 
     it('### 取消自己訂單的付款', (done) => {
@@ -262,7 +434,7 @@ describe('# 訂單相關頁面', () => {
     });
   });
 
-  describe('## GET /order/:id/payment', () => {
+  describe('## 付款頁面', () => {
     it('### 顯示使用者有效訂單對應的付款頁面', (done) => {
       request(app)
         .get('/order/1/payment')
@@ -313,8 +485,42 @@ describe('# 訂單相關頁面', () => {
     });
   });
 
-  describe('## GET /orders/confirm', () => {
-    before(async () => {
+  describe('## 確認付款失敗', () => {
+    before(() => {
+      this.linePayRespond = sinon
+        .stub(require('../config/linePayApis'), 'postConfirm')
+        .returns({
+          returnCode: '9000', // 內部錯誤
+          returnMessage: 'ERROR'
+        });
+    });
+
+    it('### 從API回傳錯誤訊息而未付款成功', (done) => {
+      request(app)
+        .get(
+          '/orders/confirm?orderId=f5a2128b-b07a-4eec-adda-25a7aadf14b3&transactionId=2022062900717799400'
+        )
+        .set('Accept', 'application/json')
+        .set('Cookie', [cookies])
+        .expect(302)
+        .end(async (err, res) => {
+          if (err) return done(err);
+          let order = await conn.query(
+            SQL`SELECT * FROM order_main WHERE id = 1;`
+          );
+          order = JSON.parse(JSON.stringify(order[0]));
+          order.status.should.be.equal('0'); // 表示仍未付款
+          return done();
+        });
+    });
+
+    after(() => {
+      this.linePayRespond.restore();
+    });
+  });
+
+  describe('## 確認付款成功', () => {
+    before(() => {
       this.linePayRespond = sinon
         .stub(require('../config/linePayApis'), 'postConfirm')
         .returns({
@@ -337,12 +543,17 @@ describe('# 訂單相關頁面', () => {
         .expect(302)
         .end(async (err, res) => {
           if (err) return done(err);
-          const order = await conn.query(
+          let order = await conn.query(
             SQL`SELECT * FROM order_main WHERE id = 1;`
           );
-          order[0].status.should.be.equal('1'); // 表示已付款
+          order = JSON.parse(JSON.stringify(order[0]));
+          order.status.should.be.equal('1'); // 表示已付款
           return done();
         });
+    });
+
+    after(() => {
+      this.linePayRespond.restore();
     });
   });
 

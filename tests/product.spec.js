@@ -18,10 +18,10 @@ describe('# 商品頁面', () => {
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
   });
 
-  describe('## GET *', () => {
+  describe('## 避免出現無效頁面', () => {
     it('將無效的路由導回首頁', (done) => {
       request(app)
-        .get('/illegalUrl') // 代表未定義的路由
+        .get('/:illegalUrl') // 代表未定義的路由
         .set('Accept', 'application/json')
         .expect(302)
         .end((err, res) => {
@@ -32,7 +32,7 @@ describe('# 商品頁面', () => {
     });
   });
 
-  describe('## GET /products', () => {
+  describe('## 顯示所有商品', () => {
     describe('(先測沒有上架商品時的首頁)', () => {
       it('### 提示：目前尚未有商品上架', (done) => {
         request(app)
@@ -94,7 +94,7 @@ describe('# 商品頁面', () => {
     });
   });
 
-  describe('## GET /products/:id', () => {
+  describe('## 個別商品介紹', () => {
     it('### 進入存在的商品頁面', (done) => {
       request(app)
         .get('/products/1')
