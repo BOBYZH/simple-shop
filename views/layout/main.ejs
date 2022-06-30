@@ -29,11 +29,11 @@
     <nav class="my-2 my-md-0 mr-md-3">
 
       <span class="p-2 text-dark d-none d-sm-inline">歡迎光臨，
-        <%= userName || "新顧客" %>！
+        <%= memberName || "新顧客" %>！
       </span>
       <a class="p-2 text-dark" href="/cart">購物車</a>
 
-      <% if (!userName) { %>
+      <% if (!memberName) { %>
 
         <a class="p-2 text-dark" href="/signin">登入會員</a>
 

@@ -68,7 +68,7 @@ let conn;
       `
         CREATE TABLE if not exists order_main(
           id    INT(10)      unsigned NOT NULL AUTO_INCREMENT,
-          UserId   INT(10)      unsigned NOT NULL,
+          MemberId   INT(10)      unsigned NOT NULL,
           name  VARCHAR(100)        NOT NULL,
           phone VARCHAR(50)        NOT NULL,
           address VARCHAR(100)        NOT NULL,
@@ -78,7 +78,7 @@ let conn;
           paymentUrl VARCHAR(512),
           createdAt  DATETIME  DEFAULT current_timestamp() ,
           PRIMARY KEY(id),
-          FOREIGN KEY (UserId) REFERENCES member(id)
+          FOREIGN KEY (MemberId) REFERENCES member(id)
         );
         `
     );

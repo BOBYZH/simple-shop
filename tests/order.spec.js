@@ -28,7 +28,7 @@ describe('# 訂單相關頁面', () => {
     // 建立2個測試用會員帳號
     await conn.query(
       `
-        INSERT INTO member (email, password) VALUES ('user@email.com', '${bcrypt.hashSync(
+        INSERT INTO member (email, password) VALUES ('member@email.com', '${bcrypt.hashSync(
           'password',
           bcrypt.genSaltSync(10),
           null
@@ -37,7 +37,7 @@ describe('# 訂單相關頁面', () => {
     );
     await conn.query(
       SQL`
-        INSERT INTO member (email, password) VALUES ('anotherUser@email.com', '${bcrypt.hashSync(
+        INSERT INTO member (email, password) VALUES ('anotherMember@email.com', '${bcrypt.hashSync(
           'password',
           bcrypt.genSaltSync(10),
           null
@@ -58,11 +58,11 @@ describe('# 訂單相關頁面', () => {
       );
     });
 
-    it('(登入取得req.session.user)', (done) => {
+    it('(登入取得req.session.member)', (done) => {
       request(app)
         .post('/signin')
         .send({
-          email: 'user@email.com',
+          email: 'member@email.com',
           password: 'password',
           password2: 'password'
         })
@@ -134,7 +134,7 @@ describe('# 訂單相關頁面', () => {
       request(app)
         .post('/order')
         .send({
-          name: 'User Test',
+          name: 'member Test',
           address: 'test address',
           phone: '0987654321',
           status: '0',
@@ -147,7 +147,7 @@ describe('# 訂單相關頁面', () => {
           if (err) return done(err);
           // 訂單資料檢查
           const orders = await conn.query(
-            SQL`SELECT id, UserId, 
+            SQL`SELECT id, MemberId, 
           AES_DECRYPT(UNHEX(name), ${process.env.AES_KEY}) as name, 
           AES_DECRYPT(UNHEX(phone), ${process.env.AES_KEY}) as phone,
           AES_DECRYPT(UNHEX(address), ${process.env.AES_KEY}) as address, 
@@ -156,7 +156,7 @@ describe('# 訂單相關頁面', () => {
           );
           const order = orders[0];
           // 在nodejs環境內，從MariaDB以AES_DECRYPT後的資料以buffer(緩衝區)顯示為二進制(相當於未完全轉換？)，因此需要再轉換成字串，才能用斷言比對
-          order.name.toString().should.be.equal('User Test');
+          order.name.toString().should.be.equal('member Test');
           order.phone.toString().should.be.equal('0987654321');
           order.address.toString().should.be.equal('test address');
           order.status.toString().should.be.equal('0');
@@ -205,9 +205,9 @@ describe('# 訂單相關頁面', () => {
       // 同使用者的另一筆訂單資料
       await conn.query(
         SQL`INSERT INTO order_main
-        (UserId, name, phone, address, amount, status, sn, paymentUrl)
+        (MemberId, name, phone, address, amount, status, sn, paymentUrl)
         VALUES (1, 
-          HEX(AES_ENCRYPT('User Test', ${process.env.AES_KEY})), 
+          HEX(AES_ENCRYPT('member Test', ${process.env.AES_KEY})), 
           HEX(AES_ENCRYPT('0912345678', ${process.env.AES_KEY})), 
           HEX(AES_ENCRYPT('test address', ${process.env.AES_KEY})), 600, 0, 'sn', 'url');`
       );
@@ -218,9 +218,9 @@ describe('# 訂單相關頁面', () => {
       // 另一位使用者的訂單資料
       await conn.query(
         SQL`INSERT INTO order_main
-        (UserId, name, phone, address, amount, status, sn, paymentUrl)
+        (MemberId, name, phone, address, amount, status, sn, paymentUrl)
         VALUES (2, 
-          HEX(AES_ENCRYPT('AnotherUser Test', ${process.env.AES_KEY})), 
+          HEX(AES_ENCRYPT('AnotherMember Test', ${process.env.AES_KEY})), 
           HEX(AES_ENCRYPT('0928592562', ${process.env.AES_KEY})), 
           HEX(AES_ENCRYPT('test address', ${process.env.AES_KEY})), 1000, 0, 'sn', 'url');`
       );
@@ -306,7 +306,7 @@ describe('# 訂單相關頁面', () => {
           const order = await conn.query(
             SQL`SELECT * FROM order_main WHERE id = 3;`
           );
-          order[0].UserId.should.not.be.equal(1);
+          order[0].MemberId.should.not.be.equal(1);
           res.headers.location.should.be.equal('/orders');
           return done();
         });

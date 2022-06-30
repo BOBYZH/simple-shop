@@ -25,7 +25,7 @@ dayjs.locale('zh-tw');
 
 const orderController = {
   getOrders: async (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.member) {
       await req.flash('errorMessages', '需登入才能查看訂單！！');
       return res.redirect('back');
     } else {
@@ -34,12 +34,12 @@ const orderController = {
 
         /* 示範以AES對訂購者姓名、電話號碼、地址等個資加解密，並將加密金鑰存在環境變數，以及從16進位還原否則產生錯誤 */
         let orders = await conn.query(
-          SQL`SELECT id, UserId, 
+          SQL`SELECT id, MemberId, 
           AES_DECRYPT(UNHEX(name), ${process.env.AES_KEY}) as name, 
           AES_DECRYPT(UNHEX(phone), ${process.env.AES_KEY}) as phone,
           AES_DECRYPT(UNHEX(address), ${process.env.AES_KEY}) as address, 
           amount, status, sn, createdAt 
-          FROM order_main WHERE UserId = ${req.session.user.id};`
+          FROM order_main WHERE MemberId = ${req.session.member.id};`
         );
 
         for (let i = 0; i < orders.length; i++) {
@@ -68,7 +68,7 @@ const orderController = {
   },
 
   postOrder: async (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.member) {
       await req.flash('errorMessages', '需登入才能送出訂單！！');
       return res.redirect('back');
     } else {
@@ -95,8 +95,8 @@ const orderController = {
 
         // 依表單回傳建立訂單，其中姓名、電話與地址以AES加密儲存，避免客戶資料直接洩露
         const query = await conn.query(
-          SQL`INSERT INTO order_main (UserId, name, address, phone, status, amount) 
-                  VALUES (${req.session.user.id}, 
+          SQL`INSERT INTO order_main (MemberId, name, address, phone, status, amount) 
+                  VALUES (${req.session.member.id}, 
                   HEX(AES_ENCRYPT(${req.body.name},  ${process.env.AES_KEY})),
                   HEX(AES_ENCRYPT(${req.body.address},  ${process.env.AES_KEY})),
                   HEX(AES_ENCRYPT(${req.body.phone}, ${process.env.AES_KEY})), 
@@ -185,7 +185,7 @@ const orderController = {
   },
 
   getPayment: async (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.member) {
       await req.flash('errorMessages', '需登入才能進入付款頁面！！');
       return res.redirect('back');
     } else {
@@ -197,7 +197,7 @@ const orderController = {
         );
         order = order[0];
 
-        if (order.UserId !== req.session.user.id) {
+        if (order.MemberId !== req.session.member.id) {
           // 防止對他人的訂單擅自操作
           await req.flash('errorMessages', '只能替自己的訂單付款！');
           res.redirect('/orders');
@@ -228,7 +228,7 @@ const orderController = {
   },
 
   cancelOrder: async (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.member) {
       await req.flash('errorMessages', '需登入才能取消訂單！');
       return res.redirect('back');
     } else {
@@ -240,7 +240,7 @@ const orderController = {
         );
         order = order[0];
 
-        if (order.UserId !== req.session.user.id) {
+        if (order.MemberId !== req.session.member.id) {
           // 防止對他人的訂單擅自操作
           await req.flash('errorMessages', '只能取消自己的訂單！');
           return res.redirect('/orders');
@@ -282,7 +282,7 @@ const orderController = {
   },
 
   confirmPayment: async (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.member) {
       await req.flash('errorMessages', '需登入才能取消訂單！');
       return res.redirect('back');
     } else {
@@ -292,11 +292,11 @@ const orderController = {
 
         conn = await pool.getConnection();
         let order = await conn.query(
-          SQL`SELECT UserId, amount FROM order_main WHERE sn = ${orderId};`
+          SQL`SELECT MemberId, amount FROM order_main WHERE sn = ${orderId};`
         );
         order = order[0];
 
-        if (order.UserId !== req.session.user.id) {
+        if (order.MemberId !== req.session.member.id) {
           // 防止對他人的訂單擅自操作
           await req.flash('errorMessages', '只能確認自己的訂單！');
           return res.redirect('/orders');

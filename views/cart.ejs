@@ -114,7 +114,7 @@
     <div class="col-12 col-md-7 px-5 mb-4">
       <form action="order" method="POST">
         <div class="form-group">
-          <% if (userName) { %>
+          <% if (memberName) { %>
             <h5 class="my-4">會員結帳：收件人資料</h5>
             <% } else { %>
               <div class="ml-2">
@@ -130,7 +130,7 @@
               <% } %>
         </div>
 
-        <% if (userName) { %>
+        <% if (memberName) { %>
           <div class="form-group my-3">
             <label for="name" class="text-muted ml-3">姓名</label>
             <input type="text" class="form-control border-top-0 border-left-0 border-right-0" id="name" name="name"

@@ -37,7 +37,7 @@ describe('# 會員系統', () => {
       request(app)
         .post('/signup')
         .send({
-          email: 'user@email.com',
+          email: 'member@email.com',
           password: 'password',
           password2: 'password'
         })
@@ -46,7 +46,7 @@ describe('# 會員系統', () => {
         .end(async (err, res) => {
           if (err) return done(err);
           const member = await conn.query('SELECT email FROM member;');
-          expect(member[0].email).to.equal('user@email.com');
+          expect(member[0].email).to.equal('member@email.com');
           expect(res.header.location).to.equal('/signin');
           return done();
         });
@@ -71,7 +71,7 @@ describe('# 會員系統', () => {
       request(app)
         .post('/signin')
         .send({
-          email: 'user@email.com',
+          email: 'member@email.com',
           password: 'password',
           password2: 'password'
         })

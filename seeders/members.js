@@ -36,7 +36,7 @@ let conn;
 
     await conn.query(
       `
-        INSERT INTO member (email, password) VALUES ('user1@example.com', '${bcrypt.hashSync(
+        INSERT INTO member (email, password) VALUES ('member1@example.com', '${bcrypt.hashSync(
           '12345678',
           bcrypt.genSaltSync(10),
           null
@@ -46,7 +46,7 @@ let conn;
 
     await conn.query(
       `
-        INSERT INTO member (email, password) VALUES ('user2@example.com', '${bcrypt.hashSync(
+        INSERT INTO member (email, password) VALUES ('member2@example.com', '${bcrypt.hashSync(
           '12345678',
           bcrypt.genSaltSync(10),
           null

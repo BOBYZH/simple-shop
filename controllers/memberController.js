@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs'); // 產生不可逆的密碼雜湊用
 const memberController = {
   signUpPage: (req, res) => {
     // 有會員名稱(登入狀態)時轉到首頁(不須註冊)
-    if (req.session.userName) {
+    if (req.session.memberName) {
       res.redirect('/');
     } else {
       res.render('signUp');
@@ -54,7 +54,7 @@ const memberController = {
 
   signInPage: (req, res) => {
     // 有會員名稱(登入狀態)時轉到首頁(不須登入)
-    if (req.session.userName) {
+    if (req.session.memberName) {
       res.redirect('/');
     } else {
       res.render('signIn');
@@ -64,13 +64,13 @@ const memberController = {
   signIn: async (req, res) => {
     conn = await pool.getConnection();
     try {
-      const users = await conn.query('SELECT id, email, password FROM member;');
+      const members = await conn.query('SELECT id, email, password FROM member;');
 
       // 搜尋帳密是否對應，密碼也以雜湊比對
-      const searchedResult = users.find(
-        (user) =>
-          user.email === req.body.email &&
-          bcrypt.compareSync(req.body.password, user.password)
+      const searchedResult = members.find(
+        (member) =>
+          member.email === req.body.email &&
+          bcrypt.compareSync(req.body.password, member.password)
       );
 
       // 沒有找到對應的帳號與密碼組合
@@ -78,10 +78,10 @@ const memberController = {
         await req.flash('errorMessages', '帳號或密碼輸入錯誤');
         res.redirect('back');
       } else {
-        const userName = searchedResult.email.split('@')[0]; // 產生在標題列顯示的帳號名稱，以便確認登入狀態
+        const memberName = searchedResult.email.split('@')[0]; // 產生在標題列顯示的帳號名稱，以便確認登入狀態
         // 將會員資料存入session，建立登入狀態
-        req.session.userName = await userName;
-        req.session.user = await searchedResult;
+        req.session.memberName = await memberName;
+        req.session.member = await searchedResult;
 
         res.redirect('back');
       }
