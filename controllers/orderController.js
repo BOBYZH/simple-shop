@@ -63,7 +63,7 @@ const orderController = {
         res.redirect('back');
         throw err;
       } finally {
-        if (conn) conn.release();
+        if (conn) conn.end();
       }
     }
   },
@@ -180,7 +180,7 @@ const orderController = {
         throw err;
       } finally {
         await conn.query('SET AUTOCOMMIT = 1');
-        if (conn) conn.release();
+        if (conn) conn.end();
       }
     }
   },
@@ -223,7 +223,7 @@ const orderController = {
         res.redirect('back');
         throw err;
       } finally {
-        if (conn) conn.release();
+        if (conn) conn.end();
       }
     }
   },
@@ -277,7 +277,7 @@ const orderController = {
         res.redirect('back');
         throw err;
       } finally {
-        if (conn) conn.release();
+        if (conn) conn.end();
       }
     }
   },
@@ -325,7 +325,7 @@ const orderController = {
         res.redirect('back');
         throw err;
       } finally {
-        if (conn) conn.release();
+        if (conn) conn.end();
       }
     }
   }

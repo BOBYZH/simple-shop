@@ -35,7 +35,7 @@ const cartController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 
@@ -109,7 +109,7 @@ const cartController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 
@@ -147,7 +147,7 @@ const cartController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 
@@ -179,7 +179,7 @@ const cartController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 
@@ -208,7 +208,7 @@ const cartController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   }
 };

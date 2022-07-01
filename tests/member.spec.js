@@ -191,6 +191,6 @@ describe('# 會員系統', () => {
     await conn.query('SET FOREIGN_KEY_CHECKS = 0;');
     await conn.query('TRUNCATE TABLE `member`;');
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
-    await conn.release();
+    await conn.end();
   });
 });

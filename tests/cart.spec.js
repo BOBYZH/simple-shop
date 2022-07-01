@@ -257,6 +257,6 @@ describe('# 購物車頁面', () => {
     await conn.query('TRUNCATE TABLE `cart_main`;');
     await conn.query('TRUNCATE TABLE `cart_sub`;');
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
-    await conn.release();
+    await conn.end();
   });
 });

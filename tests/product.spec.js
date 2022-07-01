@@ -135,6 +135,6 @@ describe('# 商品頁面', () => {
     await conn.query('SET FOREIGN_KEY_CHECKS = 0;');
     await conn.query('TRUNCATE TABLE `product`;');
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
-    await conn.release();
+    await conn.end();
   });
 });

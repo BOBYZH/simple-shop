@@ -566,6 +566,6 @@ describe('# 訂單相關頁面', () => {
     await conn.query('TRUNCATE TABLE `order_main`;');
     await conn.query('TRUNCATE TABLE `order_sub`;');
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
-    await conn.release();
+    await conn.end();
   });
 });

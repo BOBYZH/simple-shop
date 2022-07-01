@@ -79,7 +79,7 @@ let conn;
     console.log('ERROR!');
     throw err;
   } finally {
-    if (conn) conn.release();
+    if (conn) conn.end();
   }
 
   process.exit();

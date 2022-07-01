@@ -49,7 +49,7 @@ const memberController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 
@@ -91,7 +91,7 @@ const memberController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 

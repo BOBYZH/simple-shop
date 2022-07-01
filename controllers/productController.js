@@ -15,7 +15,7 @@ const productController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   },
 
@@ -39,7 +39,7 @@ const productController = {
       res.redirect('back');
       throw err;
     } finally {
-      if (conn) conn.release();
+      if (conn) conn.end();
     }
   }
 };
