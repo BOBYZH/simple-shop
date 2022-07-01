@@ -1,6 +1,6 @@
 /* 選用與MySQL類似但較無授權問題的MariaDB練習 */
 function mariaDBSettings () {
-  const mariaDB = require('mariaDB');
+  const mariaDB = require('mariadb');
   const pool =
   // 加入production環境的變數判斷
   (process.env.NODE_ENV !== 'production')

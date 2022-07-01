@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') { // 本機開發測試時自訂環�
 由於未建立資料庫時，使用"database: process.env.DB"此設定會出錯，
 故從config/mariaDB拿掉此行再另於此設定，
 */
-const mariaDB = require('mariaDB');
+const mariaDB = require('mariadb');
 // 加入production環境的變數判斷
 const pool =
 (process.env.NODE_ENV !== 'production')
