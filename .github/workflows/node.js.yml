@@ -25,8 +25,12 @@ jobs:
     - name: set environment variables
       uses: allenevans/set-env@v2.0.0
       with:
-        DB: test
-        DB_HOST: 172.17.0.1
+        # keys
+        SESSION_SECRET: 'secret'
+        AES_KEY: 'key'
+        # mariaDB
+        DB: 'test'
+        DB_HOST: '172.17.0.1'
         DB_PORT: 3306
         DB_USER: ''
         DB_PWD: ''
