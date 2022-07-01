@@ -6,11 +6,12 @@ if (process.env.NODE_ENV !== 'production') { // 本機開發測試時自訂環�
 
 const mariaDBConfig = require('../config/mariaDB.js'); // 載入模組化的mariaDB設定
 const pool = mariaDBConfig();
+const connection = require('../config/connection.js');
 let conn;
 
 (async () => {
   try {
-    conn = await pool.getConnection();
+    conn = await connection(pool);
 
     await conn.query(
       `

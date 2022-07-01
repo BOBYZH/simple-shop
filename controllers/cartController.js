@@ -1,12 +1,13 @@
 const mariaDBConfig = require('../config/mariaDB.js');
 const SQL = require('sql-template-strings');
 const pool = mariaDBConfig();
+const connection = require('../config/connection.js');
 let conn;
 
 const cartController = {
   getCart: async (req, res) => {
     try {
-      conn = await pool.getConnection();
+      conn = await connection(pool);
 
       /* 列出使用者購物車與其中挑選項目 */
       const cart = await conn.query(
@@ -42,7 +43,7 @@ const cartController = {
     // 使用或新增購物車與選購項目
     try {
       let cart;
-      conn = await pool.getConnection();
+      conn = await connection(pool);
 
       /* 模擬sequelize的findOrCreate：找尋是否已有使用者對應的購物車，有的話使用它，沒有的話新增一個給使用者 */
       cart = await conn.query(
@@ -115,7 +116,7 @@ const cartController = {
   addCartItem: async (req, res) => {
     // 購物車項目+1
     try {
-      conn = await pool.getConnection();
+      conn = await connection(pool);
 
       let cartItem = await conn.query(
         // JOIN查詢購物車項目與商品資料
@@ -153,7 +154,7 @@ const cartController = {
   subCartItem: async (req, res) => {
     // 購物車項目-1，格式同上
     try {
-      conn = await pool.getConnection();
+      conn = await connection(pool);
 
       let cartItem = await conn.query(
         SQL`SELECT * FROM cart_sub WHERE id = ${req.params.id};`
@@ -184,7 +185,7 @@ const cartController = {
 
   deleteCartItem: async (req, res) => {
     try {
-      conn = await pool.getConnection();
+      conn = await connection(pool);
 
       let cartItem = await conn.query(
         // 先取得要刪的項目資料做判斷

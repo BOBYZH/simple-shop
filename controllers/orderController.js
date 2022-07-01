@@ -1,6 +1,7 @@
 const mariaDBConfig = require('../config/mariaDB.js');
 const SQL = require('sql-template-strings');
 const pool = mariaDBConfig();
+const connection = require('../config/connection.js');
 let conn;
 
 const linePayApis = require('../config/linePayApis.js');
@@ -30,7 +31,7 @@ const orderController = {
       return res.redirect('back');
     } else {
       try {
-        conn = await pool.getConnection();
+        conn = await connection(pool);
 
         /* 示範以AES對訂購者姓名、電話號碼、地址等個資加解密，並將加密金鑰存在環境變數，以及從16進位還原否則產生錯誤 */
         let orders = await conn.query(
@@ -73,7 +74,7 @@ const orderController = {
       return res.redirect('back');
     } else {
       try {
-        conn = await pool.getConnection();
+        conn = await connection(pool);
 
         let cart = await conn.query(
           SQL`SELECT * FROM cart_main WHERE id = ${req.session.cartId};`
@@ -190,7 +191,7 @@ const orderController = {
       return res.redirect('back');
     } else {
       try {
-        conn = await pool.getConnection();
+        conn = await connection(pool);
 
         let order = await conn.query(
           SQL`SELECT * FROM order_main WHERE id = ${req.params.id};`
@@ -233,7 +234,7 @@ const orderController = {
       return res.redirect('back');
     } else {
       try {
-        conn = await pool.getConnection();
+        conn = await connection(pool);
 
         let order = await conn.query(
           SQL`SELECT * FROM order_main WHERE id = ${req.params.id};`
@@ -290,7 +291,7 @@ const orderController = {
         const transactionId = req.query.transactionId;
         const orderId = req.query.orderId;
 
-        conn = await pool.getConnection();
+        conn = await connection(pool);
         let order = await conn.query(
           SQL`SELECT MemberId, amount FROM order_main WHERE sn = ${orderId};`
         );

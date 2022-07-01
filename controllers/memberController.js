@@ -1,6 +1,7 @@
 const mariaDBConfig = require('../config/mariaDB.js'); // 直接使用SQL語法操作資料庫
 const SQL = require('sql-template-strings'); // 讓ES6模板字串防止 sql 注入
 const pool = mariaDBConfig();
+const connection = require('../config/connection.js');
 let conn;
 
 const bcrypt = require('bcryptjs'); // 產生不可逆的密碼雜湊用
@@ -24,7 +25,7 @@ const memberController = {
       return res.redirect('back');
     }
     try {
-      conn = await pool.getConnection();
+      conn = await connection(pool);
       const findEmail = await conn.query(
         SQL`SELECT email FROM member WHERE email = ${req.body.email};`
       );
@@ -62,7 +63,7 @@ const memberController = {
   },
 
   signIn: async (req, res) => {
-    conn = await pool.getConnection();
+    conn = await connection(pool);
     try {
       const members = await conn.query('SELECT id, email, password FROM member;');
 

@@ -8,11 +8,12 @@ const bcrypt = require('bcryptjs');
 
 const mariaDBConfig = require('../config/mariaDB.js'); // 載入模組化的mariaDB設定
 const pool = mariaDBConfig();
+const connection = require('../config/connection.js');
 let conn;
 
 (async () => {
   try {
-    conn = await pool.getConnection();
+    conn = await connection(pool);
 
     await conn.query(
       // 允許無視外鍵關聯限制清空表格

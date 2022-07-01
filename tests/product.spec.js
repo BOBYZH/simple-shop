@@ -8,11 +8,12 @@ const app = require('../app');
 
 const mariaDBConfig = require('../config/mariaDB.js');
 const pool = mariaDBConfig();
+const connection = require('../config/connection.js');
 let conn;
 
 describe('# 商品頁面', () => {
   before(async () => {
-    conn = await pool.getConnection();
+    conn = await connection(pool);
     await conn.query('SET FOREIGN_KEY_CHECKS = 0;');
     await conn.query('TRUNCATE TABLE `product`;');
     await conn.query('SET FOREIGN_KEY_CHECKS = 1;');
