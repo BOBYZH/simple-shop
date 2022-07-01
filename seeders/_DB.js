@@ -29,19 +29,19 @@ let conn;
 
     await conn.query(
       `
-        DROP database if exists simple_shop;
+        DROP database if exists ${process.env.DB};
         `
     );
 
     await conn.query(
       `
-        CREATE database if not exists simple_shop;
+        CREATE database if not exists ${process.env.DB};
         `
     );
 
     await conn.query(
       `
-        USE simple_shop;
+        USE ${process.env.DB};
         `
     );
 
