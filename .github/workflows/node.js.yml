@@ -22,6 +22,14 @@ jobs:
     - uses: actions/checkout@v3
     - name: Shutdown Ubuntu MySQL (SUDO)
       run: sudo service mysql stop
+    - name: set environment variables
+      uses: allenevans/set-env@v2.0.0
+      with:
+        DB: test
+        DB_HOST: 172.17.0.1
+        DB_PORT: 3306
+        DB_USER: ''
+        DB_PWD: ''
     - name: Start MariaDB
       uses: getong/mariadb-action@v1.1
     - name: Use Node.js ${{ matrix.node-version }}
