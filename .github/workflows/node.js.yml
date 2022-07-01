@@ -32,7 +32,7 @@ jobs:
         DB: 'test'
         DB_HOST: '172.17.0.1'
         DB_PORT: 3306
-        DB_USER: ''
+        DB_USER: 'root'
         DB_PWD: ''
     - name: Start MariaDB
       uses: getong/mariadb-action@v1.1
