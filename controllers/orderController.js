@@ -138,7 +138,9 @@ const orderController = {
 
         /* 打LINE PAY API 產生付款連結 */
         const amount = parseInt(req.body.amount); // 將金額從字串轉為整數
+        const webUrl = `${req.protocol}://${req.get('host')}`; // 取得網站URL，用於向LINE PAY API發送確認與取消連結
         const linePayRespond = await linePayApis.postRequest(
+          webUrl,
           amount,
           order.id,
           cart.items

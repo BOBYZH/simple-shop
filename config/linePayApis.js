@@ -35,7 +35,7 @@ function setConfigs (hmacBase64) {
 
 const linePayApis = {
   // Request API，請求付款資訊
-  postRequest: async (amount, orderId, cartItems) => {
+  postRequest: async (webUrl, amount, orderId, cartItems) => {
     // 將uuid移到函式內，避免每次呼叫時uuid沒有更新
     nonce = uuid();
     const productName = process.env.WEB_PRODUCT_CATEGORY;
@@ -52,9 +52,9 @@ const linePayApis = {
         }
       ],
       redirectUrls: {
-        confirmUrl: process.env.WEB_URL + '/orders/confirm',
+        confirmUrl: webUrl + '/orders/confirm',
         confirmUrlType: 'CLIENT',
-        cancelUrl: process.env.WEB_URL + '/orders'
+        cancelUrl: webUrl + '/orders' // 未實作用戶退款功能，僅為了符合API格式填寫
       }
     };
 
