@@ -82,7 +82,15 @@
   - DB_PWD: 登入資料庫的帳號密碼，本機密碼為登出安裝資料庫時設定，測試平台則依其預設而定
 
 ### 部署相關
-(WIP)
+- 本專案使用Heroku(伺服器) + JawsDB Maria(資料庫)的免費方案，方案限制開啟時需稍待主機從休眠狀態恢復，且有偏低的連線數與資料容量上限
+- Heroku上的應用程式可以在[儀表板(dashboard)](https://dashboard.heroku.com/apps)查看設定與狀態
+- JawsDB Maria內的資料內容則可透過如[HeidiSQL](https://www.heidisql.com/)的圖形化介面查看(需填入遠端資料庫帳密等資訊登入)
+- 主要是開發(development)與部署(production)環境的差異
+0. 資料庫在開發(與測試)環境是將帳號、密碼、資料庫名稱等各項變數拆開，而在部署環境則是放在同一個連結內，僅保留資料庫名稱的環境變數"DB"供SQL語法使用
+1. 連線語法與環境變數不同(`pool.getConnection() || mariaDB.createConnection(process.env.JAWSDB_MARIA_URL)`)，需加入條件判斷切換
+2. 連線結束釋放(避免佔用而崩潰)的語法有版本差異(`conn.release() || conn.end()`)，前者在部署環境不支援只好替換
+3. 資料庫的預設名稱也不一樣，若程式碼有指定名稱需換成環境變數而非寫死(simple_shop => ${process.env.DB})，才能在不同環境通用
+4. 安裝資料庫後產生的環境變數"JAWSDB_MARIA_URL"如果無法連線，協定名稱(連結開頭)須將"mysql"替換成"mariadb"
 
 ## 後續可發展方向
 (WIP)
