@@ -1,5 +1,6 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# 沒有註解的部分是選擇Node.js CI預設後自動產生的
 
 name: Node.js CI
 
@@ -16,24 +17,28 @@ jobs:
 
     strategy:
       matrix:
+        # 指定node.js版本
         node-version: [16.x]
 
     steps:
     - uses: actions/checkout@v3
+    # 直接關閉來避免Ubuntu既有的MySQL軟體影響測試
     - name: Shutdown Ubuntu MySQL (SUDO)
       run: sudo service mysql stop
+    # 設置環境變數，以便可以在測試時使用金鑰與資料庫設定值
     - name: set environment variables
       uses: allenevans/set-env@v2.0.0
       with:
-        # keys
+        # keys，字串內容隨意
         SESSION_SECRET: 'secret'
         AES_KEY: 'key'
-        # mariaDB
+        # mariaDB，使用映象檔預設值
         DB: 'test'
         DB_HOST: '172.17.0.1'
         DB_PORT: 3306
         DB_USER: 'root'
         DB_PWD: ''
+    # 使用市集提供的映象檔安裝MariaDB
     - name: Start MariaDB
       uses: getong/mariadb-action@v1.1
     - name: Use Node.js ${{ matrix.node-version }}
