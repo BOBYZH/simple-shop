@@ -43,7 +43,30 @@
   - 只包含單元測試：`npm run test`
   - 包含程式碼覆蓋率計算和報告：`npm run cover`(位置："./coverage/index.html")
 
-### 環境變數說明
-
+### 環境變數說明(.env各項變數的)
+- webInfo 
+  - 客製化電商網站的選項
+  - WEB_TITLE: 商店名稱(語言不限)
+  - WEB_ICON: 網站圖示(圖示或影像檔案連結)
+  - WEB_PRODUCT_CATEGORY: 商品類型(描述販賣商品的統稱，因應LINEPay格式要求)
+- bootswatchTheme
+  - 本專案前端設計部分使用[Bootswatch](https://bootswatch.com/)，相當於可挑選主題配色的[Bootstrap](https://bootstrap5.hexschool.com/)，
+  - THEME_NAME: 可藉由更換主題名稱，使用不同的網站配色風格
+- keys
+  - 處理加密資料
+  - SESSION_SECRET: 處理登入、購物車、環境變數等session狀態驗證與簽章所需，內文隨意
+  - AES_KEY: 因訂單個人資訊部分有加密儲存以保護隱私，須設定加密金鑰字串，同樣內文隨意
+- LinePay
+  - 可參考[API文件說明](https://pay.line.me/jp/developers/apis/onlineApis?locale=zh_TW)
+  - LINE_PAY_API_URI: API服務連結，測試版使用的是"sandbox"
+  - LINE_PAY_CHANNEL_ID: 申請LINE Pay帳號後提供，相當於店家帳號
+  - LINE_PAY_CHANNEL_SECRET: 來源同上，相當於驗證交易的金鑰
+- mariaDB
+  - 資料庫相關設定，會因為環境差異做變化，甚至只用到部分設定(如部署可能只使用"DB"，其餘使用新的變數)
+  - DB: 資料庫名稱，本機開發預設為seeder建立的"simple-shop"，測試與部署平台則依其預設而定
+  - DB_HOST: 連線到資料庫的URL，本機預設為"172.17.0.1"，測試平台則依其預設而定
+  - DB_PORT: 連線到資料庫的連接埠，本機預設為"3306"，測試平台則依其預設而定
+  - DB_USER: 登入資料庫的帳號名稱，本機直接用最高權限的root，測試平台則依其預設而定
+  - DB_PWD: 登入資料庫的帳號密碼，本機密碼為登出安裝資料庫時設定，測試平台則依其預設而定
 
 ## 後續可發展方向
