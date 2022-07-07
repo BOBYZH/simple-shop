@@ -20,21 +20,3 @@ env_variables:
   # mariaDB
   DB: ""
   (URL of DB)
-
-manual_scaling: 
-  instances: 1 
-
-resources:
-  cpu: 1
-  memory_gb: 0.5
-  disk_size_gb: 10
-
-skip_files: 
-  - node_modules/
-  - .gitignore
-  - .git/
-  - github/
-  - .nyc_output/
-  - coverage/
-  - .env
-  - ngrok.exe

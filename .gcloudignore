@@ -1,0 +1,12 @@
+
+.gcloudignore
+.git
+.gitignore
+.github/
+.nyc_output
+coverage/
+.env
+ngrok.exe
+
+# Node.js dependencies:
+node_modules/
